@@ -5,6 +5,13 @@
 /.pnp
 .pnp.js
 
+### IntelliJ IDEA ###
+/.idea
+.idea
+*.iws
+*.iml
+*.ipr
+
 # testing
 /coverage
 
