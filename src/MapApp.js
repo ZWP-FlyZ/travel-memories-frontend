@@ -1,47 +1,61 @@
 import React from 'react'
 import './MapApp.css'
 import BMap from 'BMap';
-import {Row, Col, Icon, Checkbox} from 'antd'
+import {Row, Col, Checkbox, Avatar,Input,Select,Drawer} from 'antd'
+import Search from "antd/es/input/Search";
 
 class MapApp extends React.Component{
 
     ckOptions = ["已发生","已发生并验证","未发生"]
 
-
     render() {
         return(
             <div id="map-app" className="map-app">
                 <Row type="flex" align="middle">
-                    <Col span={1} >
+                    <Col span={8} >
                         <div className="user-container">
-                            <div className="user-container-user-icon">
-                                <Icon  type="user" className="user-container-user-icon-default"/>
+                            <Avatar className="user-container-user-icon" size={60} icon="user" />
+                        </div>
+                    </Col>
+                    <Col span={8}>
+                        <Row type="flex" justify="center">
+                            <div className="cg-container">
+                                <Checkbox.Group size="large"
+                                                options={this.ckOptions}
+                                                defaultValue={this.ckOptions}
+                                                onChange={this.onChecked}/>
                             </div>
+                        </Row>
 
-                        </div>
                     </Col>
-                    <Col push={10} span={4}>
-                        <div className="cg-container">
-                            <div className="cg-container-options">
-                                <Checkbox.Group
-                                    options={this.ckOptions}
-                                    defaultValue={this.ckOptions}
-                                    onChange={this.onChecked}/>
-                            </div>
-                        </div>
-                    </Col>
-                    <Col  span={5} push={14}>
+                    <Col  span={8}>
                         <div className="search-container">
-                            <h1>search-bar</h1>
+                            <Input.Group compact>
+                                <Select defaultValue={"地图"} style={{width:80}}>
+                                    <Select.Option value={"地图"}>地图</Select.Option>
+                                    <Select.Option value={"事件点"}>事件点</Select.Option>
+                                </Select>
+                                <Search placeholder="input search text"
+                                        onSearch={value => console.log(value)}
+                                        style={{ width: 300 }}/>
+                            </Input.Group>
                         </div>
                     </Col>
                 </Row>
 
                 <Row type="flex">
-                    <Col span={4}>
-                        <div className="info-container">
-                            <h1>info-container</h1>
-                        </div>
+                    <Col span={5}>
+                        <Drawer title="Basic Drawer"
+                                placement="left"
+                                closable={true}
+                                onClose={null}
+                                visible={true}
+                                mask={false}
+                                getContainer={false}
+                                width={300}
+                                style={{ position: 'absolute',
+                                       height:"78vh"}}>
+                        </Drawer>
                     </Col>
 
                 </Row>
@@ -58,10 +72,12 @@ class MapApp extends React.Component{
     }
 
 
+    // checkbox筛选回调
     onChecked(checked){
         console.log(checked);
     }
 
+    // 地图单价回调
     onMapClick(event){
         console.log(event.type, event.target, event.point, event.pixel, event.overlay);
     };

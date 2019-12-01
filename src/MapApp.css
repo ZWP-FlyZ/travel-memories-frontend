@@ -24,23 +24,12 @@
 }
 
 .user-container-user-icon{
-    margin: 0 auto;
     top: 10px;
-    width: 60px;
-    height: 60px;
-    border-radius:50%;
-    background-color: black;
-    position: relative;
+    left: 10px;
+    position: absolute;
 }
 
-.user-container-user-icon-default{
 
-    margin-top: 5px;
-    margin-left: 6px;
-    font-size: 48px;
-    color: red;
-    position: relative;
-}
 
 
 
@@ -58,14 +47,19 @@
     background-color: white;
     max-width: 280px;
     min-width: 280px;
+    margin: 0 auto;
 }
 
 .search-container{
 
     position: relative;
     z-index: 3;
-    background-color: aqua;
-    opacity:0.3;
+    float: right;
+    padding-right: 10px;
+    max-width: 400px;
+    min-width: 400px;
+    /*background-color: aqua;*/
+    /*opacity:0.3;*/
 }
 
 
@@ -73,10 +67,9 @@
 
     position: relative;
     z-index: 2;
-    height: 700px;
-    max-height: 800vh;
-    background-color: #ff0000;
-    opacity:0.3;
+
+    /*background-color: #ff0000;*/
+    /*opacity:0.3;*/
 }
 
 
