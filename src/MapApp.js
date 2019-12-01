@@ -1,6 +1,7 @@
 import React from 'react'
 import './MapApp.css'
 import BMap from 'BMap';
+import LogInComponent from './component/LogInComponent';
 import {Row, Col, Checkbox, Avatar,Input,Select,Drawer} from 'antd'
 import Search from "antd/es/input/Search";
 
@@ -8,13 +9,30 @@ class MapApp extends React.Component{
 
     ckOptions = ["已发生","已发生并验证","未发生"]
 
+    constructor(props, context) {
+        super(props, context);
+        // this.onLoginSuccess = this.onLoginSuccess.bind(this);
+
+    }
+
+    // 组件状态
+    state={
+        // 登录相关状态
+        loginVisible:false,// 显示登录窗口
+        hasLogin:false,//true 已经登录，false还未登录
+    }
+
+
     render() {
         return(
             <div id="map-app" className="map-app">
                 <Row type="flex" align="middle">
                     <Col span={8} >
                         <div className="user-container">
-                            <Avatar className="user-container-user-icon" size={60} icon="user" />
+                            <Avatar className="user-container-user-icon"
+                                    size={60}
+                                    icon="user"
+                                    onClick={this.onClickUser}/>
                         </div>
                     </Col>
                     <Col span={8}>
@@ -67,20 +85,51 @@ class MapApp extends React.Component{
                     </Col>
                 </Row>
                 <div id="map-container" className="map-container"/>
+
+                <div>
+                    <LogInComponent visible = {this.state.loginVisible}
+                                    loginSuccess={this.onLoginSuccess}
+                                    loginCancel={this.onLoginCancel} />
+                </div>
+
             </div>
         )
     }
-
 
     // checkbox筛选回调
     onChecked(checked){
         console.log(checked);
     }
 
-    // 地图单价回调
+    // 地图单击回调
     onMapClick(event){
         console.log(event.type, event.target, event.point, event.pixel, event.overlay);
     };
+
+    // 点击用户头像回调
+    onClickUser =e=>{
+        console.debug("onClickUser login=",this.state.hasLogin)
+        if(this.state.hasLogin){
+            // 已经登录
+            console.debug("user has login")
+        }else{
+            // 未登录
+            this.setState({loginVisible:true})
+            console.debug("user try to login")
+        }
+        this.setState({loginVisible:true})
+    }
+    // 登录成功后处理
+    onLoginSuccess = userinfo=>{
+        console.log('user login success!',userinfo)
+        this.setState({loginVisible:false,hasLogin:true})
+    }
+    // 登录取消处理
+    onLoginCancel = ()=>{
+        console.log('user login canceled!')
+        this.setState({loginVisible:false,hasLogin:false})
+    }
+
 
 
 
