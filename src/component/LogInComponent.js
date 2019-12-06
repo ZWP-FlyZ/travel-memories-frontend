@@ -1,9 +1,7 @@
 import React from "react"
-import {Row, Col, Icon,Input,Modal,Form} from 'antd'
+import Axios from 'axios'
+import {message ,Row, Col, Icon,Input,Modal,Form} from 'antd'
 import './LogInComponent.css'
-
-
-
 
 
 class LogInComponent extends React.Component{
@@ -13,37 +11,93 @@ class LogInComponent extends React.Component{
         this.state = {
             // 登录时等待
             confirmLoading:false,
-            visible:false
+            visible:"false",
+            username:null,
+            password:null
         }
-        this.handleOk = this.handleOk.bind(this);
-        this.handleCancel = this.handleCancel.bind(this);
+
         // 登录成功回调,返回用户的一些信息
-        this.loginSuccess = this.props.loginSuccess;
+        this.loginSuccess = props.loginSuccess;
         // 取消登录回调
-        this.loginCancel = this.props.loginCancel;
+        this.loginCancel = props.loginCancel;
+        Axios.defaults.headers['c-version']='1.0';
+        this.cancelToken = null;
     }
 
     // 点击登录回调
-    handleOk(){
+    handleOk = ()=>{
         this.setState(pre=>({confirmLoading:true}));
         this.doLogin();
     }
-    handleCancel(){
+    handleCancel = ()=>{
         this.setState(pre=>({confirmLoading:false}));
+        if(this.cancelToken!=null)
+            this.cancelToken.cancel("取消登录");
         // 执行取消登录回调
         if(this.loginCancel != null)
             this.loginCancel();
     }
     // 执行登录操作
     doLogin(){
-        setTimeout(()=>{
+        this.cancelToken = Axios.CancelToken.source();
+        this.connect = Axios(
+            {
+                url:'/api/login',
+                method:'post',
+                params:{"username":this.state.username,
+                    "password":this.state.password},
+                cancelToken:this.cancelToken.token
+            }
+        ).then(respone=>{
             this.setState({confirmLoading:false});
-            if(this.loginSuccess != null)
-                this.loginSuccess({uId:1,username:"zz",iconPath:"ssss"});
-        },2000)
-        // 登录成功回调
+            console.log(respone);
+            // 登录成功回调
+            const res = respone.data;
+            if(res.code === 1000){
+                // 登录成功
+                res.data.username=this.state.username;
+                this.loginSuccess(res.data);
+            }else{
+                console.debug('login fal');
+                message.error("用户名或者密码错误！");
+            }
+        }).catch(e=>{
+            this.setState({confirmLoading:false});
+            if(Axios.isCancel(e)){
+                console.log("登录取消");
+            }else{
+                message.error("未知错误！");
+                console.log(e);
+            }
+
+        })
+
+        // setTimeout(()=>{
+        //
+        //     if(this.loginSuccess != null)
+        //         this.loginSuccess({uId:1,username:this.state.username,iconPath:"ssss",password:this.state.password});
+        // },2000)
+
     }
 
+    // 用户名输入框回调
+    onChangeUsername = e=>{
+        // console.log(e.target.value);
+        this.setState({username:e.target.value})
+    }
+    onChangePassword = e=>{
+        // console.log(e.target.value);
+        this.setState({password:e.target.value})
+    }
+
+
+    componentDidMount() {
+
+    }
+
+    componentWillUnmount() {
+
+    }
 
     render() {
 
@@ -67,6 +121,7 @@ class LogInComponent extends React.Component{
                         <Input
                             prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
                             placeholder="用户名"
+                            onChange={this.onChangeUsername}
                         />
                     </Col>
                 </Row>
@@ -76,6 +131,7 @@ class LogInComponent extends React.Component{
                             prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
                             type="password"
                             placeholder="密码"
+                            onChange={this.onChangePassword}
                         />
                     </Col>
                 </Row>
@@ -83,14 +139,19 @@ class LogInComponent extends React.Component{
             </Modal>);
     }
 
-    componentWillMount() {
-        console.log(this.props);
-    }
 }
 
 // 登录表单组件
 class LogInForm extends React.Component{
 
+    render() {
+        return(
+            <Form>
+
+            </Form>
+
+        );
+    }
 }
 
 
