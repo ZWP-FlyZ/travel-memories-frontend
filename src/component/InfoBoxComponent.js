@@ -111,17 +111,10 @@ class InfoBoxComponent extends React.Component{
             return (<div>EMPTY</div>);
         else if (boxType === 'user_info')
             return this.userinfo(data);
-        else if (boxType === 'add_epoint'){
-            // let m = moment();
-            // this.state.epTitle=data.title;
-            // this.state.epAddr=data.address;
-            // this.state.epLng=data.lng;
-            // this.state.epLat=data.lat;
-            // this.state.epTime=m.valueOf();
-            // this.state.epTimeMoment=m;
-            // this.state.epType=1;
+        else if (boxType === 'add_epoint')
             return this.addEpoint(data);
-        }
+        else if (boxType === 'edit_epoint')
+            return this.editEpint();
     }
 
     userinfo(user){

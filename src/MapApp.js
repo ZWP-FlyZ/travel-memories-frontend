@@ -9,7 +9,10 @@ import Axios from 'axios'
 
 class MapApp extends React.Component{
 
-    ckOptions = ["已发生","已发生并验证","未发生"]
+    ckOptions = [
+        {label:"已发生",value:1},
+        {label:"已发生并验证",value:2},
+        {label:"未发生",value:0},]
     myGeo = new BMap.Geocoder();
     constructor(props, context) {
         super(props, context);
@@ -31,15 +34,43 @@ class MapApp extends React.Component{
         infoBoxTitle:'EMPTY',
         infoBoxVisible:false,
         infoBoxType:'',
-        infoBoxData:{}
-
+        infoBoxData:{},
+        // checkbox相关状态
+        checked:[0,1,2],
     }
 
+    // 事件点
+    ePoints={
+        drawPoints:[],// 需要被添加到地图的事件点
+        remPoints:[]// 其余事件点
+    }
+
+
+    choseEPoints =checked =>{
+        let newdraw = [];
+        let newrem=[];
+        this.ePoints.drawPoints.forEach((p,idx,arr)=>{
+            if(checked.indexOf(p.epType)>=0){
+                newdraw.push(p);
+            }else
+                newrem.push(p);
+        })
+        this.ePoints.remPoints.forEach((p,idx,arr)=>{
+            if(checked.indexOf(p.epType)>=0){
+                newdraw.push(p);
+            }else
+                newrem.push(p);
+        })
+        this.ePoints.drawPoints=newdraw;
+        this.ePoints.remPoints=newrem;
+    }
     // checkbox筛选回调
-    onChecked(checked){
+    onChecked =checked=>{
         console.log(checked);
+        this.setState({checked:checked})
+        this.choseEPoints(checked);
+        this.reDrawEPoints();
     }
-
     // 点击用户头像回调
     onClickUser =e=>{
         console.debug("onClickUser login=",this.state.hasLogin)
@@ -70,13 +101,13 @@ class MapApp extends React.Component{
             loginDefaultIcon:null,
             });
         this.setState({loginDefaultM:c})
+        this.getAllEPoints();
     }
     // 登录取消处理
     onLoginCancel = ()=>{
         console.log('user login canceled!')
         this.setState({loginVisible:false,hasLogin:false})
     }
-
     // 登出成功后回调
     onLogoutSuccess = () =>{
         message.success("登出成功！")
@@ -89,24 +120,30 @@ class MapApp extends React.Component{
             infoBoxVisible:false,
             infoBoxType:'',
             infoBoxData:{}})
+        this.ePoints={
+            drawPoints:[],// 需要被添加到地图的事件点
+            remPoints:[]// 其余事件点
+        };
+        this.map.clearOverlays();
     }
-
     //单击地图事件
     onClickMap = event=>{
         console.log(event.type, event.target, event.point, event.pixel, event.overlay);
         // var infoWindow = new BMap.InfoWindow(" <div> <Button>I</Button></div> ", {width:300,height: 300});  // 创建信息窗口对象
         // this.map.openInfoWindow(infoWindow, event.point);
     }
-
     // 双击地图事件
     onDoubleClickMap = event=>{
         console.log(event.type, event.target, event.point, event.pixel, event.overlay);
     }
-
     // 开启添加事件点信息框
     onRightClickMap = event=>{
         // console.log(event.type, event.target, event.point, event.pixel, event.overlay);
         if(this.state.infoBoxVisible) return ;
+        if(!this.state.hasLogin){
+            message.error("登录之后添加事件点！");
+            return ;
+        }
         this.myGeo.getLocation(event.point,res=>{
             console.log('geo',res);
             let data = {
@@ -130,16 +167,10 @@ class MapApp extends React.Component{
         });
         this.map.panTo(event.point);
     }
-
     // 双击右键地图事件
     onRightDoubleClickMap = event=>{
     console.log(event.type, event.target, event.point, event.pixel, event.overlay);
 }
-
-    childSelf = self=>{
-        this.$infobox = self;
-    }
-
     // 点击关闭消息box回调
     onCloseInfoBox = e => {
         this.setState({infoBoxVisible:false})
@@ -153,7 +184,7 @@ class MapApp extends React.Component{
         if(visible)
             this.$infobox.updateInfoBox();
     }
-
+    // 添加事件点完成回调
     onAddEPointSuccess = e=>{
         message.success("添加事件点成功！");
         if(!!this.pointToAdd){
@@ -164,7 +195,48 @@ class MapApp extends React.Component{
             infoBoxVisible:false,
             infoBoxType:'',
             infoBoxData:{}})
+        this.getAllEPoints();
     }
+
+    //从服务端获取所有事件点
+    getAllEPoints =()=>{
+        Axios({
+            url:'/api/epoint/getall',
+            method:'get',
+        }).then(response=>{
+            console.debug(response);
+            // 成功回调
+            const res = response.data;
+            if(res.code === 1000){
+                this.ePoints.drawPoints=res.data;
+                this.ePoints.remPoints=[];
+            }else{
+                message.error("获取用户事件点失败")
+            }
+        }).then(e=>{
+            this.choseEPoints(this.state.checked);
+            this.reDrawEPoints();
+        }).catch(e=>{
+            message.error("获取用户事件点失败")
+        })
+    }
+    // 事件点点击回调
+    onEPointClick = (e)=>{
+        console.debug('点击事件点',e.target);
+    }
+    // 重画所有事件点
+    reDrawEPoints = () =>{
+        this.map.clearOverlays();
+        const points = this.ePoints;
+        this.ePoints.drawPoints.forEach((point,idx,arr)=>{
+            let bp = new BMap.Point(point.epLng, point.epLat);
+            let mk = new BMap.Marker(bp);
+            mk.epoint = point;
+            mk.addEventListener('click',this.onEPointClick);
+            this.map.addOverlay(mk);
+        })
+    }
+
 
     componentDidMount() {
         let map = new BMap.Map('map-container',
@@ -206,7 +278,7 @@ class MapApp extends React.Component{
                             <div className="cg-container">
                                 <Checkbox.Group size="large"
                                                 options={this.ckOptions}
-                                                defaultValue={this.ckOptions}
+                                                defaultValue={this.state.checked}
                                                 onChange={this.onChecked}/>
                             </div>
                         </Row>
@@ -245,7 +317,7 @@ class MapApp extends React.Component{
                             <InfoBoxComponent
                                 type={this.state.infoBoxType}
                                 data={this.state.infoBoxData}
-                                child={this.childSelf}
+                                child={self=>{this.$infobox = self;}}
                                 onLogoutSuccess={this.onLogoutSuccess}
                                 onAddEPointSuccess={this.onAddEPointSuccess}
                                 />
@@ -271,7 +343,6 @@ class MapApp extends React.Component{
             </div>
         )
     }
-
 
 }
 
