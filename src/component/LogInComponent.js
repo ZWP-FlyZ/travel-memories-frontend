@@ -12,15 +12,14 @@ class LogInComponent extends React.Component{
             // 登录时等待
             confirmLoading:false,
             visible:"false",
-            username:null,
-            password:null
+            username:'zwp5',
+            password:'123456'
         }
 
         // 登录成功回调,返回用户的一些信息
         this.loginSuccess = props.loginSuccess;
         // 取消登录回调
         this.loginCancel = props.loginCancel;
-        Axios.defaults.headers['c-version']='1.0';
         this.cancelToken = null;
     }
 
@@ -121,6 +120,7 @@ class LogInComponent extends React.Component{
                         <Input
                             prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
                             placeholder="用户名"
+                            defaultValue={"zwp5"}
                             onChange={this.onChangeUsername}
                         />
                     </Col>
@@ -131,6 +131,7 @@ class LogInComponent extends React.Component{
                             prefix={<Icon type="lock" style={{ color: 'rgba(0,0,0,.25)' }} />}
                             type="password"
                             placeholder="密码"
+                            defaultValue={"123456"}
                             onChange={this.onChangePassword}
                         />
                     </Col>

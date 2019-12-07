@@ -2,17 +2,20 @@ import React from 'react'
 import './MapApp.css'
 import BMap from 'BMap';
 import LogInComponent from './component/LogInComponent';
+import InfoBoxComponent from './component/InfoBoxComponent'
 import {message,Row, Col, Checkbox, Avatar,Input,Select,Drawer} from 'antd'
 import Search from "antd/es/input/Search";
+import Axios from 'axios'
 
 class MapApp extends React.Component{
 
     ckOptions = ["已发生","已发生并验证","未发生"]
-
+    myGeo = new BMap.Geocoder();
     constructor(props, context) {
         super(props, context);
         // this.onLoginSuccess = this.onLoginSuccess.bind(this);
-
+        // 设置通信版本号
+        Axios.defaults.headers['c-version']='1.0';
     }
 
     // 组件状态
@@ -20,28 +23,36 @@ class MapApp extends React.Component{
         // 登录相关状态
         loginVisible:false,// 显示登录窗口
         loginDefaultIcon:'user',
-        loginDefaultM:"",
+        loginDefaultM:'',
         hasLogin:false,//true 已经登录，false还未登录
-        user:null// 用户信息
-    }
+        user:null,// 用户信息
 
+        //信息框相关状态
+        infoBoxTitle:'EMPTY',
+        infoBoxVisible:false,
+        infoBoxType:'',
+        infoBoxData:{}
+
+    }
 
     // checkbox筛选回调
     onChecked(checked){
         console.log(checked);
     }
 
-    // 地图单击回调
-    onMapClick(event){
-        console.log(event.type, event.target, event.point, event.pixel, event.overlay);
-    };
-
     // 点击用户头像回调
     onClickUser =e=>{
         console.debug("onClickUser login=",this.state.hasLogin)
         if(this.state.hasLogin){
             // 已经登录
+            if(this.state.infoBoxVisible) return ;
             console.debug("user has login")
+            this.setState({
+                infoBoxTitle:'用户信息',
+                infoBoxVisible:true,
+                infoBoxType:'user_info',
+                infoBoxData:this.state.user})
+
         }else{
             // 未登录
             this.setState({loginVisible:true})
@@ -51,12 +62,14 @@ class MapApp extends React.Component{
     // 登录成功后处理
     onLoginSuccess = userinfo=>{
         console.log('user login success!',userinfo)
+        let c = userinfo.username.charAt(0).toUpperCase();
         message.success("登录成功！")
         this.setState({loginVisible:false,
-                            hasLogin:true,
-                            user:userinfo,
-            loginDefaultIcon:'',
-            loginDefaultM:userinfo.username.charAt(0).toUpperCase()})
+            hasLogin:true,
+            user:userinfo,
+            loginDefaultIcon:null,
+            });
+        this.setState({loginDefaultM:c})
     }
     // 登录取消处理
     onLoginCancel = ()=>{
@@ -64,14 +77,104 @@ class MapApp extends React.Component{
         this.setState({loginVisible:false,hasLogin:false})
     }
 
+    // 登出成功后回调
+    onLogoutSuccess = () =>{
+        message.success("登出成功！")
+        this.setState({
+            hasLogin:false,
+            user:null,
+            loginDefaultIcon:'user',
+            loginDefaultM:'',
+            infoBoxTitle:'EMPTY',
+            infoBoxVisible:false,
+            infoBoxType:'',
+            infoBoxData:{}})
+    }
+
+    //单击地图事件
+    onClickMap = event=>{
+        console.log(event.type, event.target, event.point, event.pixel, event.overlay);
+        // var infoWindow = new BMap.InfoWindow(" <div> <Button>I</Button></div> ", {width:300,height: 300});  // 创建信息窗口对象
+        // this.map.openInfoWindow(infoWindow, event.point);
+    }
+
+    // 双击地图事件
+    onDoubleClickMap = event=>{
+        console.log(event.type, event.target, event.point, event.pixel, event.overlay);
+    }
+
+    // 开启添加事件点信息框
+    onRightClickMap = event=>{
+        // console.log(event.type, event.target, event.point, event.pixel, event.overlay);
+        if(this.state.infoBoxVisible) return ;
+        this.myGeo.getLocation(event.point,res=>{
+            console.log('geo',res);
+            let data = {
+                lng:event.point.lng,
+                lat:event.point.lat,
+                title:'',
+                address:''
+            }
+            if(res){
+                data.title = res.address;
+                data.address = res.address;
+            }
+            this.setState({
+                infoBoxTitle:'创建事件点',
+                infoBoxVisible:true,
+                infoBoxType:'add_epoint',
+                infoBoxData:data})
+            this.pointToAdd = new BMap.Marker(event.point);
+            this.map.addOverlay(this.pointToAdd);
+            this.pointToAdd.setAnimation(2); //跳动的动画
+        });
+        this.map.panTo(event.point);
+    }
+
+    // 双击右键地图事件
+    onRightDoubleClickMap = event=>{
+    console.log(event.type, event.target, event.point, event.pixel, event.overlay);
+}
+
+    childSelf = self=>{
+        this.$infobox = self;
+    }
+
+    // 点击关闭消息box回调
+    onCloseInfoBox = e => {
+        this.setState({infoBoxVisible:false})
+        this.$infobox.closeInfoBox();
+        if(!!this.pointToAdd){
+            this.map.removeOverlay(this.pointToAdd);
+        }
+    }
+    // 当InfoBox准备就绪时，更新内部内容。
+    onReadyInfoBox = visible =>{
+        if(visible)
+            this.$infobox.updateInfoBox();
+    }
+
+    onAddEPointSuccess = e=>{
+        message.success("添加事件点成功！");
+        if(!!this.pointToAdd){
+            this.map.removeOverlay(this.pointToAdd);
+        }
+        this.setState({
+            infoBoxTitle:'EMPTY',
+            infoBoxVisible:false,
+            infoBoxType:'',
+            infoBoxData:{}})
+    }
 
     componentDidMount() {
         let map = new BMap.Map('map-container',
-            {enableMapClick:false// 关闭默认点击事件
+            {
+                enableMapClick:false,// 关闭默认点击事件
             });
         let cent = new BMap.Point(116.404, 39.915);
         map.centerAndZoom(cent,15);
         map.enableScrollWheelZoom();
+        // map.disableDoubleClickZoom();
         map.addControl(new BMap.MapTypeControl(
             {   anchor:3,
                 offset: new BMap.Size(20, 20),
@@ -79,7 +182,11 @@ class MapApp extends React.Component{
             }));
         map.addControl(new BMap.ScaleControl());
         // map.addControl(new BMap.NavigationControl({type:1}))
-        map.addEventListener('click',this.onMapClick);
+        map.addEventListener('click',this.onClickMap);
+        map.addEventListener('dblclick',this.onDoubleClickMap);
+        map.addEventListener('rightclick',this.onRightClickMap);
+        map.addEventListener('rightdblclick',this.onRightDoubleClickMap);
+        this.map = map;
     }
 
     render() {
@@ -122,16 +229,26 @@ class MapApp extends React.Component{
 
                 <Row type="flex">
                     <Col span={5}>
-                        <Drawer title="Basic Drawer"
+                        <Drawer
+                                title={this.state.infoBoxTitle}
                                 placement="left"
                                 closable={true}
-                                onClose={null}
-                                visible={true}
+                                onClose={this.onCloseInfoBox}
+                                afterVisibleChange={this.onReadyInfoBox}
+                                visible={this.state.infoBoxVisible}
                                 mask={false}
                                 getContainer={false}
-                                width={300}
+                                width={368}
+                                destroyOnClose={true}
                                 style={{ position: 'absolute',
                                     height:"78vh"}}>
+                            <InfoBoxComponent
+                                type={this.state.infoBoxType}
+                                data={this.state.infoBoxData}
+                                child={this.childSelf}
+                                onLogoutSuccess={this.onLogoutSuccess}
+                                onAddEPointSuccess={this.onAddEPointSuccess}
+                                />
                         </Drawer>
                     </Col>
 
