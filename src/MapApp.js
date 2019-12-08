@@ -128,7 +128,7 @@ class MapApp extends React.Component{
     }
     //单击地图事件
     onClickMap = event=>{
-        console.log(event.type, event.target, event.point, event.pixel, event.overlay);
+        // console.log(event.type, event.target, event.point, event.pixel, event.overlay);
         // var infoWindow = new BMap.InfoWindow(" <div> <Button>I</Button></div> ", {width:300,height: 300});  // 创建信息窗口对象
         // this.map.openInfoWindow(infoWindow, event.point);
         // this.setState({

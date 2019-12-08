@@ -19,10 +19,11 @@ class InfoBoxComponent extends React.Component{
 
             showEPointUpdateBtn:0,
             ePointUpdateLoading:false,
-            waitingEPoingInfo:false,
+            waitingEPoingInfo:true,
             showEPTextInfoUpdateBtn:0,
             ePTextInfoUpdateLoading:false,
-            waitingTextInfo:false,
+            waitingTextInfo:true,
+            disableTextInfo:true,
             // 用户信息
             uid:0,
             username:'',
@@ -34,10 +35,9 @@ class InfoBoxComponent extends React.Component{
             epTime:m.valueOf(),
             epTimeMoment:m,
             epType:1,
-            epTiInfo:''
+            epTiText:''
         }
     }
-
 
     // 父组件关闭时
     closeInfoBox =()=>{
@@ -57,7 +57,7 @@ class InfoBoxComponent extends React.Component{
                 epLat:data.lat,
                 epTime:m.valueOf(),
                 epTimeMoment:m,
-                epType:1
+                epType:1,
             });
         }else if(this.props.type==='user_info'){
             this.setState({
@@ -75,8 +75,20 @@ class InfoBoxComponent extends React.Component{
                 epLat:data.epLat,
                 epTime:data.epTime,
                 epTimeMoment:moment.unix(data.epTime/1000),
-                epType:data.epType
+                epType:data.epType,
+                waitingEPoingInfo:false,
             });
+            if(data.epTiInfo==null){
+                this.getTextInfo(data);
+            }else{
+                let gg = '';
+                if(data.epTiInfo!==0)
+                    gg =data.epTiInfo.epTiText;
+                this.setState({epTiText:gg,
+                    waitingTextInfo:false,
+                    disableTextInfo:false});
+            }
+
         }
     }
 
@@ -121,7 +133,112 @@ class InfoBoxComponent extends React.Component{
             }
         })
     }
-    
+
+    // 从服务器中获取事件点文本信息
+    getTextInfo= (epoint)=>{
+        // this.setState({addEPointLoading:true})
+        Axios({
+            url:'/api/epoint/get_textinfo',
+            method:'get',
+            params:{
+                "epId":epoint.epId,
+            },
+        }).then(respone=>{
+            this.setState({waitingTextInfo:false});
+            console.debug('getTextInfo',respone);
+            // 成功回调
+            const res = respone.data;
+            if(res.code === 1000){
+                //获取到文本信息
+                this.setState({disableTextInfo:false,
+                    epTiText:res.data==null?'':res.data.epTiText});
+                if(res.data!=null)
+                    epoint.epTiInfo=res.data;
+                else
+                    epoint.epTiInfo=0
+            }else{
+                message.error("获取文本信息失败！");
+            }
+        }).catch(e=>{
+            this.setState({waitingTextInfo:false});
+            if(Axios.isCancel(e)){
+                console.log("获取文本信息取消");
+            }else{
+                message.error("未知错误！");
+                console.log(e);
+            }
+        })
+    }
+
+    // 更新文本信息到服务器中
+    updateTextInfo = ()=>{
+        const epoint = this.props.data;
+        const curtext = this.state.epTiText;
+        if((epoint.epTiInfo===0&&curtext==='')||
+            (epoint.epTiInfo!==0&&
+            epoint.epTiInfo.epTiText===curtext)){
+            // 无需更新
+            console.debug('无须更新文本信息');
+            this.setState({
+                showEPTextInfoUpdateBtn:0,
+                ePTextInfoUpdateLoading:false,
+                waitingTextInfo:false,
+                disableTextInfo:false,
+            });
+        }else {
+            console.debug('更新文本信息');
+            console.debug(epoint,curtext);
+            Axios({
+                url:'/api/epoint/update_textinfo',
+                method:'post',
+                params:{
+                    "epId":epoint.epId,
+                    "text":curtext
+                },
+            }).then(respone=>{
+                this.setState({waitingTextInfo:false,disableTextInfo:false});
+                console.debug('updateTextInfo',respone);
+                // 成功回调
+                const res = respone.data;
+                if(res.code === 1000){
+                    //更新文本信息成功
+                    this.setState({
+                        showEPTextInfoUpdateBtn:0,
+                        ePTextInfoUpdateLoading:false});
+                    if(epoint.epTiInfo===0){
+                        epoint.epTiInfo={
+                            epTiText:curtext
+                        }
+                    }else
+                        epoint.epTiInfo.epTiText=curtext;
+                    message.success("更新文本信息成功！")
+                }else if(res.code === 1006){
+                    message.error("更新文本信息失败！文本超过1800字符！");
+                    this.setState({ePTextInfoUpdateLoading:false});
+                }else{
+                    message.error("更新文本信息失败！");
+                    this.setState({ePTextInfoUpdateLoading:false});
+                }
+            }).catch(e=>{
+                this.setState({
+                    waitingTextInfo:false,
+                    disableTextInfo:false,
+                    ePTextInfoUpdateLoading:false});
+                if(Axios.isCancel(e)){
+                    console.log("更新文本信息取消");
+                }else{
+                    message.error("未知错误！");
+                    console.log(e);
+                }
+            })
+
+
+        }
+
+
+    }
+
+
     componentDidMount() {
         this.props.child(this);
     }
@@ -237,7 +354,12 @@ class InfoBoxComponent extends React.Component{
                         <Col span={12}>
                             <div  style={{float:'right'}}>
                                 <Button size={'small'}
-                                        onClick={e=>{this.setState({ePointUpdateLoading:true})}}
+                                        onClick={e=>{
+                                            this.setState({
+                                                ePointUpdateLoading:true,
+                                                waitingTextInfo:true,});
+                                            this.updateTextInfo();
+                                        }}
                                         style={{display:this.displaystr[this.state.showEPointUpdateBtn]}} >
                                     <Icon type="sync" spin={this.state.ePointUpdateLoading}
                                           style={{fontSize:'15px',color:'red'}}
@@ -326,7 +448,12 @@ class InfoBoxComponent extends React.Component{
                             <div
                                 style={{float:'right'}}>
                                 <Button size={'small'}
-                                        onClick={e=>{this.setState({ePTextInfoUpdateLoading:true})}}
+                                        onClick={e=>{
+                                            this.setState({
+                                                ePointUpdateLoading:true,
+                                                waitingTextInfo:true,});
+                                            this.updateTextInfo();
+                                        }}
                                         style={{display:this.displaystr[this.state.showEPTextInfoUpdateBtn]}}>
                                     <Icon type="sync" spin={this.state.ePTextInfoUpdateLoading}
                                           style={{fontSize:'15px',color:'red'}}
@@ -339,17 +466,16 @@ class InfoBoxComponent extends React.Component{
                         <Col >
                             <Spin tip={'更新中...'} spinning={this.state.waitingTextInfo} delay={500}>
                                 <Input.TextArea
-                                    onChange={e=>{this.setState({epTiInfo:e.target.value,
+                                    onChange={e=>{this.setState({epTiText:e.target.value,
                                         showEPTextInfoUpdateBtn:1})}}
                                     placeholder="无数据"
                                     autoSize={{ minRows: 14, maxRows: 14 }}
+                                    disabled={this.state.disableTextInfo}
+                                    value={this.state.epTiText}
                                 />
                             </Spin>
                         </Col>
                     </Row>
-
-
-
                 </div>
 
 
