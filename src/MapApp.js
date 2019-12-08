@@ -337,7 +337,7 @@ class MapApp extends React.Component{
                                 width={368}
                                 destroyOnClose={true}
                                 style={{ position: 'absolute',
-                                    height:"78vh"}}>
+                                    height:"85vh"}}>
                             <InfoBoxComponent
                                 type={this.state.infoBoxType}
                                 data={this.state.infoBoxData}

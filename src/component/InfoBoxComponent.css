@@ -21,15 +21,29 @@
     border-radius: 6px;
     padding:6px 10px;
     position: relative;
+    background-color: aliceblue;
 }
 
-.border-edit-epoint-radio{
+.border-edit-epoint-radio {
+    border-style: solid;
+    border-width: 1px;
+    border-color: #cccccc;
+    border-radius: 4px;
+    background-color: white;
+    position: relative;
+}
+
+.border-edit-epoint-button {
     border-style: solid;
     border-width: 1px;
     border-color: #cccccc;
     border-radius: 4px;
     position: relative;
+    padding: 6px 10px;
+    width:100%;
+    background-color: aliceblue;
 }
+
 
 .border-item-labe{
     position: relative;

@@ -1,5 +1,5 @@
 import React from 'react'
-import {Input,Row,Col,Button,Spin,DatePicker,Radio,message,Icon} from 'antd'
+import {Input,Row,Col,Button,Spin,DatePicker,Radio,message,Icon,Popconfirm} from 'antd'
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import moment from 'moment';
 import Axios from 'axios'
@@ -535,7 +535,7 @@ class InfoBoxComponent extends React.Component{
                 </div>
 
                 <div className={"border-edit-epoint"}
-                    style={{top:'10px'}}>
+                    style={{top:'7px'}}>
                     <Row gutter={[16,16]} type={'flex'}>
                         <Col span={12}>
                             <div style={{fontSize:'15px'}}>事件点描述</div>
@@ -573,6 +573,26 @@ class InfoBoxComponent extends React.Component{
                         </Col>
                     </Row>
                 </div>
+                <div className={'border-edit-epoint-button'}
+                     style={{top:'13px'}}>
+                    <Row gutter={[8,16]}>
+                        <Col span={10}>
+                            <Button style={{width:'100%'}}>锁定</Button>
+                        </Col>
+                        <Col span={14}>
+                            <Popconfirm title={'确认删除该事件点？'}
+                                        okText="确认" cancelText="取消"
+                                        okType={'danger'}
+                                        onConfirm={e => message.success('事件点删除成功！')}>
+                                <Button type={'danger'}
+                                        style={{width:'100%'}}>删除</Button>
+                            </Popconfirm>
+
+                        </Col>
+                    </Row>
+                </div>
+
+
 
 
             </div>
