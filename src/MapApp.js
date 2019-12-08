@@ -131,6 +131,11 @@ class MapApp extends React.Component{
         console.log(event.type, event.target, event.point, event.pixel, event.overlay);
         // var infoWindow = new BMap.InfoWindow(" <div> <Button>I</Button></div> ", {width:300,height: 300});  // 创建信息窗口对象
         // this.map.openInfoWindow(infoWindow, event.point);
+        // this.setState({
+        //     infoBoxTitle:'事件点详情',
+        //     infoBoxVisible:true,
+        //     infoBoxType:'edit_epoint',
+        //     infoBoxData:null})
     }
     // 双击地图事件
     onDoubleClickMap = event=>{
@@ -223,6 +228,12 @@ class MapApp extends React.Component{
     // 事件点点击回调
     onEPointClick = (e)=>{
         console.debug('点击事件点',e.target);
+        this.setState({
+            infoBoxTitle:'事件点详情',
+            infoBoxVisible:true,
+            infoBoxType:'edit_epoint',
+            infoBoxData:e.target.epoint})
+
     }
     // 重画所有事件点
     reDrawEPoints = () =>{
