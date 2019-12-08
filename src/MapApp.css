@@ -27,6 +27,9 @@
     top: 10px;
     left: 10px;
     position: absolute;
+    background-color: black;
+    color: white;
+    font-size: 100px;
 }
 
 

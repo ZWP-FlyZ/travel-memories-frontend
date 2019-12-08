@@ -163,8 +163,12 @@ class MapApp extends React.Component{
                 address:''
             }
             if(res){
-                data.title = res.address;
                 data.address = res.address;
+                data.title = res.address;
+                const surds = res.surroundingPois;
+                if(surds.length>0)
+                    data.title = surds[0].title;
+
             }
             this.setState({
                 infoBoxTitle:'创建事件点',
