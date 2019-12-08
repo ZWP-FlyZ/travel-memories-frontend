@@ -76,14 +76,15 @@ class MapApp extends React.Component{
         console.debug("onClickUser login=",this.state.hasLogin)
         if(this.state.hasLogin){
             // 已经登录
-            if(this.state.infoBoxVisible) return ;
+            if(this.state.infoBoxVisible
+                &&this.state.infoBoxType !== 'user_info') return ;
             console.debug("user has login")
             this.setState({
                 infoBoxTitle:'用户信息',
                 infoBoxVisible:true,
                 infoBoxType:'user_info',
-                infoBoxData:this.state.user})
-
+                infoBoxData:this.state.user},
+                ()=>{this.$infobox.updateInfoBox();})
         }else{
             // 未登录
             this.setState({loginVisible:true})
@@ -144,10 +145,14 @@ class MapApp extends React.Component{
     // 开启添加事件点信息框
     onRightClickMap = event=>{
         // console.log(event.type, event.target, event.point, event.pixel, event.overlay);
-        if(this.state.infoBoxVisible) return ;
         if(!this.state.hasLogin){
             message.error("登录之后添加事件点！");
             return ;
+        }
+        if(this.state.infoBoxVisible
+            &&this.state.infoBoxType !== 'add_epoint') return ;
+        if(!!this.pointToAdd){
+            this.map.removeOverlay(this.pointToAdd);
         }
         this.myGeo.getLocation(event.point,res=>{
             console.log('geo',res);
@@ -165,7 +170,7 @@ class MapApp extends React.Component{
                 infoBoxTitle:'创建事件点',
                 infoBoxVisible:true,
                 infoBoxType:'add_epoint',
-                infoBoxData:data})
+                infoBoxData:data},()=>{this.$infobox.updateInfoBox();})
             this.pointToAdd = new BMap.Marker(event.point);
             this.map.addOverlay(this.pointToAdd);
             this.pointToAdd.setAnimation(2); //跳动的动画
@@ -174,8 +179,8 @@ class MapApp extends React.Component{
     }
     // 双击右键地图事件
     onRightDoubleClickMap = event=>{
-    console.log(event.type, event.target, event.point, event.pixel, event.overlay);
-}
+    // console.log(event.type, event.target, event.point, event.pixel, event.overlay);
+    }
     // 点击关闭消息box回调
     onCloseInfoBox = e => {
         this.setState({infoBoxVisible:false})
@@ -227,13 +232,17 @@ class MapApp extends React.Component{
     }
     // 事件点点击回调
     onEPointClick = (e)=>{
-        console.debug('点击事件点',e.target);
+        // console.debug('点击事件点',e.target);
+        if(this.state.infoBoxVisible
+            &&this.state.infoBoxType !== 'edit_epoint') return ;
+
         this.setState({
             infoBoxTitle:'事件点详情',
             infoBoxVisible:true,
             infoBoxType:'edit_epoint',
-            infoBoxData:e.target.epoint})
-
+            infoBoxData:e.target.epoint},
+            ()=>{this.$infobox.updateInfoBox();})
+        this.map.panTo(e.point);
     }
     // 重画所有事件点
     reDrawEPoints = () =>{

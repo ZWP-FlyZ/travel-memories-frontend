@@ -11,7 +11,7 @@ class LogInComponent extends React.Component{
         this.state = {
             // 登录时等待
             confirmLoading:false,
-            visible:"false",
+            Visible:"false",
             username:'zwp5',
             password:'123456'
         }
@@ -109,7 +109,7 @@ class LogInComponent extends React.Component{
                     okText={"登录"}
                     onCancel={this.handleCancel}
                     cancelText={"取消"}
-                    cancelButtonProps={{visible:false}}
+                    cancelButtonProps={{visible:'false'}}
                     confirmLoading={this.state.confirmLoading}
                     mask={false}
                     maskClosable={false}

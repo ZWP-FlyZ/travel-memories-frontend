@@ -17,9 +17,12 @@ class InfoBoxComponent extends React.Component{
             addEPointLoading:false,
             logoutLoading:false,
 
+            // 事件点属性相关状态
             showEPointUpdateBtn:0,
             ePointUpdateLoading:false,
             waitingEPoingInfo:true,
+
+            //事件点描述相关状态
             showEPTextInfoUpdateBtn:0,
             ePTextInfoUpdateLoading:false,
             waitingTextInfo:true,
@@ -58,12 +61,14 @@ class InfoBoxComponent extends React.Component{
                 epTime:m.valueOf(),
                 epTimeMoment:m,
                 epType:1,
+                addEPointLoading:false,
             });
         }else if(this.props.type==='user_info'){
             this.setState({
                 // 事件点信息
                 uid:data.uid,
                 username:data.username,
+                logoutLoading:false,
             });
         }else if(this.props.type==='edit_epoint'){
             console.debug(data);
@@ -76,19 +81,29 @@ class InfoBoxComponent extends React.Component{
                 epTime:data.epTime,
                 epTimeMoment:moment.unix(data.epTime/1000),
                 epType:data.epType,
-                waitingEPoingInfo:false,
-            });
-            if(data.epTiInfo==null){
-                this.getTextInfo(data);
-            }else{
-                let gg = '';
-                if(data.epTiInfo!==0)
-                    gg =data.epTiInfo.epTiText;
-                this.setState({epTiText:gg,
-                    waitingTextInfo:false,
-                    disableTextInfo:false});
-            }
 
+                // 事件点属性相关状态
+                showEPointUpdateBtn:0,
+                ePointUpdateLoading:false,
+                waitingEPoingInfo:false,
+
+                //事件点描述相关状态
+                showEPTextInfoUpdateBtn:0,
+                ePTextInfoUpdateLoading:false,
+                waitingTextInfo:true,
+                disableTextInfo:true,
+            },()=>{
+                if(data.epTiInfo==null){
+                    this.getTextInfo(data);
+                }else{
+                    let gg = '';
+                    if(data.epTiInfo!==0)
+                        gg =data.epTiInfo.epTiText;
+                    this.setState({epTiText:gg,
+                        waitingTextInfo:false,
+                        disableTextInfo:false});
+                }
+            });// end callback
         }
     }
 
@@ -185,6 +200,7 @@ class InfoBoxComponent extends React.Component{
                 waitingTextInfo:false,
                 disableTextInfo:false,
             });
+            message.success("更新完成")
         }else {
             console.debug('更新文本信息');
             console.debug(epoint,curtext);
@@ -235,6 +251,73 @@ class InfoBoxComponent extends React.Component{
 
         }
 
+
+    }
+
+    // 更新事件属性到服务器中
+    updateEpointAtrr=()=>{
+        const epoint = this.props.data;
+        const curstate = this.state;
+        console.debug('updateEpointAtrr',epoint,curstate);
+        if(
+            epoint.epTitle===curstate.epTitle&&
+            epoint.epAddr===curstate.epAddr&&
+            epoint.epTime===curstate.epTime&&
+            epoint.epType===curstate.epType){
+            // 无需更新
+            console.debug('无须更新属性信息');
+            this.setState({
+                showEPointUpdateBtn:0,
+                ePointUpdateLoading:false,
+                waitingEPoingInfo:false,
+            });
+            message.success("更新完成")
+        }else{
+            console.debug('更新属性信息');
+            Axios({
+                url:'/api/epoint/setting',
+                method:'post',
+                params:{
+                    epId:epoint.epId,
+                    epTitle:curstate.epTitle,
+                    epAddr:curstate.epAddr,
+                    epTime:curstate.epTime,
+                    epType:curstate.epType
+                },
+            }).then(respone=>{
+                this.setState({waitingEPoingInfo:false});
+                console.debug('updateEpointAtrr',respone);
+                // 成功回调
+                const res = respone.data;
+                if(res.code === 1000){
+                    //更新文本信息成功
+                    this.setState({
+                        showEPointUpdateBtn:0,
+                        ePointUpdateLoading:false});
+                    epoint.epTitle=curstate.epTitle
+                    epoint.epAddr=curstate.epAddr
+                    epoint.epTime=curstate.epTime
+                    epoint.epType=curstate.epType
+                    message.success("更新事件点属性成功！")
+                }else if(res.code === 1006){
+                    message.error("更新事件点属性失败！属性格式不符合要求！");
+                    this.setState({ePointUpdateLoading:false});
+                }else{
+                    message.error("更新事件点属性失败！服务器未知问题");
+                    this.setState({ePointUpdateLoading:false});
+                }
+            }).catch(e=>{
+                this.setState({
+                    waitingEPoingInfo:false,
+                    ePointUpdateLoading:false});
+                if(Axios.isCancel(e)){
+                    console.log("更新事件点属性取消");
+                }else{
+                    message.error("未知错误！");
+                    console.log(e);
+                }
+            })
+        }
 
     }
 
@@ -357,8 +440,8 @@ class InfoBoxComponent extends React.Component{
                                         onClick={e=>{
                                             this.setState({
                                                 ePointUpdateLoading:true,
-                                                waitingTextInfo:true,});
-                                            this.updateTextInfo();
+                                                waitingEPoingInfo:true,});
+                                                this.updateEpointAtrr();
                                         }}
                                         style={{display:this.displaystr[this.state.showEPointUpdateBtn]}} >
                                     <Icon type="sync" spin={this.state.ePointUpdateLoading}
@@ -450,7 +533,7 @@ class InfoBoxComponent extends React.Component{
                                 <Button size={'small'}
                                         onClick={e=>{
                                             this.setState({
-                                                ePointUpdateLoading:true,
+                                                ePTextInfoUpdateLoading:true,
                                                 waitingTextInfo:true,});
                                             this.updateTextInfo();
                                         }}
