@@ -364,65 +364,78 @@ class InfoBoxComponent extends React.Component{
     addEpoint(){
         return (
             <div style={{width:'100%',height:'100%'}}>
-                <Row gutter={[16,32]}>
-                    <Col >
-                        <Input addonBefore="标题"
-                               value={this.state.epTitle}
-                               onChange={e => {this.setState({epTitle:e.target.value})}}
-                        />
-                    </Col>
-                </Row>
-                <Row gutter={[16,32]}>
-                    <Col >
-                        <Input addonBefore="地址"
-                               value={this.state.epAddr}
-                               onChange={e => {this.setState({epAddr:e.target.value})}}
-                        />
-                    </Col>
-                </Row>
-                <Row gutter={[3,32]}>
-                    <Col span={12}>
-                        <Input addonBefore="经度" value={this.state.epLng.toFixed(7)} disabled={true}/>
-                    </Col>
-                    <Col span={12}>
-                        <Input addonBefore="纬度" value={this.state.epLat.toFixed(7)} disabled={true} />
-                    </Col>
-                </Row>
+                <div className={'border-add-epoint'}>
+                    <Row gutter={[16,16]} >
+                        <Col >
+                            <div style={{fontSize:'15px'}}>事件点属性</div>
+                        </Col>
+                    </Row>
+                    <Row gutter={[16,32]}>
+                        <Col >
+                            <Input addonBefore="标题"
+                                   value={this.state.epTitle}
+                                   onChange={e => {this.setState({epTitle:e.target.value})}}
+                            />
+                        </Col>
+                    </Row>
+                    <Row gutter={[16,32]}>
+                        <Col >
+                            <Input addonBefore="地址"
+                                   value={this.state.epAddr}
+                                   onChange={e => {this.setState({epAddr:e.target.value})}}
+                            />
+                        </Col>
+                    </Row>
+                    <Row gutter={[3,32]}>
+                        <Col span={12}>
+                            <Input addonBefore="经度" value={this.state.epLng.toFixed(7)} disabled={true}/>
+                        </Col>
+                        <Col span={12}>
+                            <Input addonBefore="纬度" value={this.state.epLat.toFixed(7)} disabled={true} />
+                        </Col>
+                    </Row>
 
-                <Row gutter={[16,32]}>
-                    <Col >
-                        <DatePicker
+                    <Row gutter={[16,32]}>
+                        <Col >
+                            <Input.Group compact>
+                                <span className={'border-item-labe'} style={{width:'30%'}}>发生时间</span>
+                                <DatePicker
                                     showTime placeholder="事件发生时间"
                                     onOk={e=>{this.setState({epTime:e.valueOf(),epTimeMoment:e})}}
                                     onChange={e=>{this.setState({epTime:e.valueOf(),epTimeMoment:e})}}
-                                    style={{width:'100%'}}
+                                    style={{width:'70%'}}
                                     locale={locale}
                                     value={this.state.epTimeMoment}
-                        />
-                    </Col>
-                </Row>
+                                />
+                            </Input.Group>
+                        </Col>
+                    </Row>
 
-                <Row gutter={[16,32]}>
-                    <Col >
-                        <Radio.Group onChange={e=>{this.setState({epType:e.target.value})}}
-                                     value={this.state.epType}>
-                            <Radio value={1}>已完成</Radio>
-                            <Radio value={2}>已完成并验证</Radio>
-                            <Radio value={0}>未完成</Radio>
-                        </Radio.Group>
-                    </Col>
-                </Row>
-
-
-                <Row gutter={[16,32]}>
-                    <Col >
-                        <Button style={{width:'100%'}}
-                                type="primary"
-                                onClick={this.onAddEPointClick}
-                                loading={this.state.addEPointLoading}
-                        >提交</Button>
-                    </Col>
-                </Row>
+                    <Row gutter={[16,32]}>
+                        <Col >
+                            <Input.Group compact>
+                                <span className={'border-item-labe'} style={{width:'30%'}}>事件类型</span>
+                                <span className={'border-edit-epoint-radio'}
+                                      style={{width:'70%',padding:'5px'}}>
+                                    <Radio.Group onChange={e=>{this.setState({epType:e.target.value})}}
+                                                 value={this.state.epType}>
+                                        <Radio value={1}>已完成</Radio>
+                                        <Radio value={0}>未完成</Radio>
+                                    </Radio.Group>
+                                </span>
+                            </Input.Group>
+                        </Col>
+                    </Row>
+                    <Row gutter={[16,32]}>
+                        <Col >
+                            <Button style={{width:'100%'}}
+                                    type="primary"
+                                    onClick={this.onAddEPointClick}
+                                    loading={this.state.addEPointLoading}
+                            >提交</Button>
+                        </Col>
+                    </Row>
+                </div>
             </div>
         );
     }
