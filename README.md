@@ -66,8 +66,8 @@ React 官方部署文档如下：[https://facebook.github.io/create-react-app/do
 
 在右上角事件点类型按钮中勾选需要显示的事件点类型。目前有两种事件类型：
 
-- ![star-empty](./public/star-empty.png 100x100) 未发生事件点
-- ![star-fill](./public/star-fill.png 100x100) 已发生事件点
+- <img src="./public/star-empty.png" width="20" hegiht="20" align=center alt='star-empty'/> 未发生事件点
+- <img src="./public/star-fill.png" width="20" hegiht="20" align=center alt='star-fill' /> 已发生事件点
 
 ### 3.添加事件点
 
