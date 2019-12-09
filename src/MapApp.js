@@ -3,8 +3,8 @@ import './MapApp.css'
 import BMap from 'BMap';
 import LogInComponent from './component/LogInComponent';
 import InfoBoxComponent from './component/InfoBoxComponent'
-import {message, Row, Col, Checkbox, Avatar, Input,Icon,
-        Select, Drawer, Radio,Collapse,Popover,Button} from 'antd'
+import {message, Row, Col, Checkbox, Avatar, Input,
+        Select, Drawer, Radio,Popover,Button} from 'antd'
 import Search from "antd/es/input/Search";
 import Axios from 'axios'
 
@@ -20,6 +20,14 @@ class MapApp extends React.Component{
         // this.onLoginSuccess = this.onLoginSuccess.bind(this);
         // 设置通信版本号
         Axios.defaults.headers['c-version']='1.0';
+        const x = 20;
+        this.starEmpty = new BMap.Icon("/star-empty.png",
+            new BMap.Size(x+5,x+5));
+        this.starEmpty.setImageSize(new BMap.Size(x+5,x+5));
+        this.starFill = new BMap.Icon("/star-fill.png",
+            new BMap.Size(x,x));
+        this.starFill.setImageSize(new BMap.Size(x,x));
+
     }
 
     // 组件状态
@@ -179,7 +187,7 @@ class MapApp extends React.Component{
                 infoBoxData:data},()=>{this.$infobox.updateInfoBox();})
             this.pointToAdd = new BMap.Marker(event.point);
             this.map.addOverlay(this.pointToAdd);
-            this.pointToAdd.setAnimation(2); //跳动的动画
+            this.pointToAdd.setAnimation(window.BMAP_ANIMATION_BOUNCE); //跳动的动画
         });
         this.map.panTo(event.point);
     }
@@ -193,6 +201,9 @@ class MapApp extends React.Component{
         this.$infobox.closeInfoBox();
         if(!!this.pointToAdd){
             this.map.removeOverlay(this.pointToAdd);
+        }
+        if(!!this.markToEdit){
+            this.markToEdit.setAnimation(null);
         }
     }
     // 当InfoBox准备就绪时，更新内部内容。
@@ -238,9 +249,13 @@ class MapApp extends React.Component{
     }
     // 事件点点击回调
     onEPointClick = (e)=>{
-        // console.debug('点击事件点',e.target);
+        console.debug('点击事件点',e.target);
         if(this.state.infoBoxVisible
             &&this.state.infoBoxType !== 'edit_epoint') return ;
+        // setAnimation(window.BMAP_ANIMATION_BOUNCE);
+        if(!!this.markToEdit){
+            this.markToEdit.setAnimation(null);
+        }
 
         this.setState({
             infoBoxTitle:'事件点详情',
@@ -248,27 +263,21 @@ class MapApp extends React.Component{
             infoBoxType:'edit_epoint',
             infoBoxData:e.target.epoint},
             ()=>{this.$infobox.updateInfoBox();})
+        e.target.setAnimation(window.BMAP_ANIMATION_BOUNCE);
         this.map.panTo(e.point);
+        this.markToEdit = e.target;
     }
     // 重画所有事件点
     reDrawEPoints = () =>{
-        const x = 20;
-        this.map.clearOverlays();
-        const points = this.ePoints;
-        const starEmpty = new BMap.Icon("/star-empty.png",
-                            new BMap.Size(x+5,x+5));
-        starEmpty.setImageSize(new BMap.Size(x+5,x+5));
-        const starFill = new BMap.Icon("/star-fill.png",
-            new BMap.Size(x,x));
-        starFill.setImageSize(new BMap.Size(x,x));
 
+        this.map.clearOverlays();
         this.ePoints.drawPoints.forEach((point,idx,arr)=>{
             let bp = new BMap.Point(point.epLng, point.epLat);
             let mk = null;
             if(point.epType===0)
-                mk = new BMap.Marker(bp,{icon:starEmpty});
+                mk = new BMap.Marker(bp,{icon:this.starEmpty});
             else
-                mk = new BMap.Marker(bp,{icon:starFill});
+                mk = new BMap.Marker(bp,{icon:this.starFill});
             mk.epoint = point;
             mk.addEventListener('click',this.onEPointClick);
             this.map.addOverlay(mk);
@@ -332,8 +341,6 @@ class MapApp extends React.Component{
     }
 
     render() {
-
-        const {Panel} = Collapse;
 
         const checkBox = (
             <div className="cg-container">

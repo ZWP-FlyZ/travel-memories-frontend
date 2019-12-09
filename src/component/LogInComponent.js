@@ -1,6 +1,6 @@
 import React from "react"
 import Axios from 'axios'
-import {message ,Row, Col, Icon,Input,Modal,Form} from 'antd'
+import {message ,Row, Col, Icon,Input,Modal} from 'antd'
 import './LogInComponent.css'
 
 
@@ -141,20 +141,6 @@ class LogInComponent extends React.Component{
     }
 
 }
-
-// 登录表单组件
-class LogInForm extends React.Component{
-
-    render() {
-        return(
-            <Form>
-
-            </Form>
-
-        );
-    }
-}
-
 
 
 export default LogInComponent;
