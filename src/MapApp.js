@@ -3,7 +3,7 @@ import './MapApp.css'
 import BMap from 'BMap';
 import LogInComponent from './component/LogInComponent';
 import InfoBoxComponent from './component/InfoBoxComponent'
-import {message,Row, Col, Checkbox, Avatar,Input,Select,Drawer} from 'antd'
+import {message, Row, Col, Checkbox, Avatar, Input, Select, Drawer, Radio,Collapse} from 'antd'
 import Search from "antd/es/input/Search";
 import Axios from 'axios'
 
@@ -261,7 +261,15 @@ class MapApp extends React.Component{
         })
     }
 
-
+    onMapTypeChange = e=>{
+        const v = e.target.value;
+        if(v===0)
+            this.map.setMapType(window.BMAP_NORMAL_MAP)
+        else if(v===1)
+            this.map.setMapType(window.BMAP_SATELLITE_MAP)
+        else
+            this.map.setMapType(window.BMAP_HYBRID_MAP)
+    }
     componentDidMount() {
         let map = new BMap.Map('map-container',
             {
@@ -271,11 +279,11 @@ class MapApp extends React.Component{
         map.centerAndZoom(cent,15);
         map.enableScrollWheelZoom();
         // map.disableDoubleClickZoom();
-        map.addControl(new BMap.MapTypeControl(
-            {   anchor:3,
-                offset: new BMap.Size(20, 20),
-                // mapTypes: [2,2],
-            }));
+        // map.addControl(new BMap.MapTypeControl(
+        //     {   anchor:window.BMAP_ANCHOR_TOP_LEFT,
+        //         offset: new BMap.Size(20, 20),
+        //         // mapTypes: [2,2],
+        //     }));
         map.addControl(new BMap.ScaleControl());
         // map.addControl(new BMap.NavigationControl({type:1}))
         map.addEventListener('click',this.onClickMap);
@@ -286,40 +294,61 @@ class MapApp extends React.Component{
     }
 
     render() {
+
+        const {Panel} = Collapse;
         return(
             <div id="map-app" className="map-app">
                 <Row type="flex" align="middle">
-                    <Col span={8} >
-                        <div className="user-container">
-                            <Avatar className="user-container-user-icon"
-                                    size={60}
-                                    icon={this.state.loginDefaultIcon}
-                                    onClick={this.onClickUser}>{this.state.loginDefaultM}</Avatar>
-                        </div>
+                    <Col span={12} >
+                        <Row type="flex" align="middle">
+                            <Col >
+                                <div className="user-container">
+                                    <Avatar className="user-container-user-icon"
+                                            size={60}
+                                            icon={this.state.loginDefaultIcon}
+                                            onClick={this.onClickUser}>{this.state.loginDefaultM}</Avatar>
+                                </div>
+                            </Col>
+                            <Col >
+                                <div className="eptype-container">
+                                    <Collapse>
+                                        <Panel header={'显示类型'}>
+                                            <div className="cg-container">
+                                                <Checkbox.Group size=""
+                                                                options={this.ckOptions}
+                                                                defaultValue={this.state.checked}
+                                                                onChange={this.onChecked}/>
+                                            </div>
+                                            {/*<Row type="flex" justify="center">*/}
+
+                                            {/*</Row>*/}
+                                        </Panel>
+                                    </Collapse>
+                                </div>
+                            </Col>
+                        </Row>
                     </Col>
-                    <Col span={8}>
-                        <Row type="flex" justify="center">
-                            <div className="cg-container">
-                                <Checkbox.Group size="large"
-                                                options={this.ckOptions}
-                                                defaultValue={this.state.checked}
-                                                onChange={this.onChecked}/>
-                            </div>
+                    <Col  span={12}>
+                        <Row type="flex" align="middle" justify="end" >
+                            <Col>
+
+                            </Col>
+
+                            <Col>
+                                <div className="search-container">
+                                    <Input.Group compact size={'large'}>
+                                        <Select defaultValue={"地图"} style={{width:'25%'}} size={'large'}>
+                                            <Select.Option value={"地图"}>地图</Select.Option>
+                                            <Select.Option value={"事件点"}>事件点</Select.Option>
+                                        </Select>
+                                        <Search placeholder="input search text"
+                                                onSearch={value => console.log(value)}
+                                                style={{width:'75%'}}/>
+                                    </Input.Group>
+                                </div>
+                            </Col>
                         </Row>
 
-                    </Col>
-                    <Col  span={8}>
-                        <div className="search-container">
-                            <Input.Group compact>
-                                <Select defaultValue={"地图"} style={{width:80}}>
-                                    <Select.Option value={"地图"}>地图</Select.Option>
-                                    <Select.Option value={"事件点"}>事件点</Select.Option>
-                                </Select>
-                                <Search placeholder="input search text"
-                                        onSearch={value => console.log(value)}
-                                        style={{ width: 300 }}/>
-                            </Input.Group>
-                        </div>
                     </Col>
                 </Row>
 
@@ -362,6 +391,16 @@ class MapApp extends React.Component{
                     <LogInComponent visible = {this.state.loginVisible}
                                     loginSuccess={this.onLoginSuccess}
                                     loginCancel={this.onLoginCancel} />
+                </div>
+
+                <div className={'map-type-container'}>
+                    <Radio.Group defaultValue={0}
+                                 buttonStyle="solid"
+                                 onChange={this.onMapTypeChange}>
+                        <Radio.Button value={0}>地图</Radio.Button>
+                        <Radio.Button value={1}>卫星</Radio.Button>
+                        <Radio.Button value={2}>混合</Radio.Button>
+                    </Radio.Group>
                 </div>
 
             </div>
