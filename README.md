@@ -1,68 +1,86 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# 记录去过地点的个人应用（前端部分）
 
-## Available Scripts
 
-In the project directory, you can run:
+## 一、环境与运行
 
-### `npm start`
+### 1、开发环境
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+> - Node.js
+>   - react
+>   - antd
+>   - axios
+>   - http-proxy-middleware
+> - 百度地图API v3
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+### 2、相关配置
 
-### `npm test`
+#### [百度地图API](http://lbsyun.baidu.com/index.php?title=jspopular3.0)配置
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1.在public/index.html中添加百度地图库和应用密钥，
+个人密钥申请链接如下，[http://lbsyun.baidu.com/apiconsole/key](http://lbsyun.baidu.com/apiconsole/key)
+```
+<script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=应用密钥"></script>
+```
+2.在React中使用百度地图库，在文件
+`` /node_modules/react-scripts/config/webpack.config.js``
+中添加以下代码,注意在添加位置
+```
+module.exports = function(webpackEnv) {
+    ...
+    // 回调的return位置
+    return {
+        externals:{
+          'BMap':'BMap'
+        }, 
+     ...   
+    }
+```
+在需要使用百度地图API的组件内导入包
+`` import BMap from 'BMap' ``
 
-### `npm run build`
+3.注意当需要使用BMap中一些常量时，需要使用**window获取**，例如
+`` window.BMAP_ANCHOR_TOP_LEFT ``。
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+#### 开发时跨域访问配置
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+在文件 ``src/setProxy.js`` 中配置需要的跨域链接。
+在/api项中设置**travel-memories-backend**项目的部署地址。
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### 3.开发相关指令
 
-### `npm run eject`
+- ``npm start`` 启动开发服务器
+- ``npm run build`` 编译，编译结果在/build文件夹中
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### 4. 部署相关内容
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+React 官方部署文档如下：[https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+## 二、使用手册
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### 1.登录 
 
-## Learn More
+点击左上角用户图标，在弹出的对话框中填写默认预先注册的用户名和密码。**目前提供注册功能**。
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 2.选择展示不同类型的事件点
 
-### Code Splitting
+在右上角事件点类型按钮中勾选需要显示的事件点类型。目前有两种事件类型：
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+- ![star-empty](./public/star-empty.png 100x100) 未发生事件点
+- ![star-fill](./public/star-fill.png 100x100) 已发生事件点
 
-### Analyzing the Bundle Size
+### 3.添加事件点
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+在需要添加事件点的位置右键，在左侧弹出区域中填写事件点各项属性。
+**目前在前端中未实现输入验证，若输入信息不合理提示错误**
 
-### Making a Progressive Web App
+### 4.修改事件点信息
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+点击需要修改的事件点，在左侧弹出区域中修改事件点各项属性，并且在下方区域中可以添加事件的文本描述。
+**目前在前端中未实现输入验证，若输入信息不合理提示错误**
 
-### Advanced Configuration
+### 5.地图类型切换
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+点击右下角按钮切换地图类型。
 
-### Deployment
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
