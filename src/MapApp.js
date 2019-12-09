@@ -345,6 +345,7 @@ class MapApp extends React.Component{
         const checkBox = (
             <div className="cg-container">
                 <Checkbox.Group
+                                disabled={this.state.infoBoxVisible}
                                 style={{width:'100%'}}
                                 defaultValue={this.state.checked}
                                 onChange={this.onChecked}>
@@ -404,8 +405,10 @@ class MapApp extends React.Component{
                         <Row type="flex" align="middle" justify="end" >
                             <Col>
                                 <div className="eptype-container">
-                                    <Popover placement={"bottom"} content={checkBox}>
-                                        <Button size={'large'} style={{width:'100%'}}>事件点类型</Button>
+                                    <Popover placement={"bottom"}
+                                             content={checkBox}>
+                                        <Button size={'large'}
+                                                style={{width:'100%'}}>事件点类型</Button>
                                     </Popover>
                                 </div>
                             </Col>
