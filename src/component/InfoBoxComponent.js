@@ -560,7 +560,7 @@ class InfoBoxComponent extends React.Component{
                                     <DatePicker
                                         showTime placeholder="发生时间"
                                         onOk={e=>{this.setState({epTime:e.valueOf(),epTimeMoment:e})}}
-                                        onChange={e=>{this.setState({epTime:!!e?0:e.valueOf(),epTimeMoment:e,
+                                        onChange={e=>{this.setState({epTime:e==null?0:e.valueOf(),epTimeMoment:e,
                                             showEPointUpdateBtn:1})}}
                                         style={{width:'70%'}}
                                         locale={locale}
