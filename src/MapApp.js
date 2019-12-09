@@ -3,7 +3,8 @@ import './MapApp.css'
 import BMap from 'BMap';
 import LogInComponent from './component/LogInComponent';
 import InfoBoxComponent from './component/InfoBoxComponent'
-import {message, Row, Col, Checkbox, Avatar, Input, Select, Drawer, Radio,Collapse} from 'antd'
+import {message, Row, Col, Checkbox, Avatar, Input,Icon,
+        Select, Drawer, Radio,Collapse,Popover,Button} from 'antd'
 import Search from "antd/es/input/Search";
 import Axios from 'axios'
 
@@ -250,16 +251,29 @@ class MapApp extends React.Component{
     }
     // 重画所有事件点
     reDrawEPoints = () =>{
+        const x = 20;
         this.map.clearOverlays();
         const points = this.ePoints;
+        const starEmpty = new BMap.Icon("/star-empty.png",
+                            new BMap.Size(x+5,x+5));
+        starEmpty.setImageSize(new BMap.Size(x+5,x+5));
+        const starFill = new BMap.Icon("/star-fill.png",
+            new BMap.Size(x,x));
+        starFill.setImageSize(new BMap.Size(x,x));
+
         this.ePoints.drawPoints.forEach((point,idx,arr)=>{
             let bp = new BMap.Point(point.epLng, point.epLat);
-            let mk = new BMap.Marker(bp);
+            let mk = null;
+            if(point.epType===0)
+                mk = new BMap.Marker(bp,{icon:starEmpty});
+            else
+                mk = new BMap.Marker(bp,{icon:starFill});
             mk.epoint = point;
             mk.addEventListener('click',this.onEPointClick);
             this.map.addOverlay(mk);
         })
     }
+
 
     onMapTypeChange = e=>{
         const v = e.target.value;
@@ -270,6 +284,24 @@ class MapApp extends React.Component{
         else
             this.map.setMapType(window.BMAP_HYBRID_MAP)
     }
+    //删除某个事件点后回调
+    onDeleteEpointSuccess =epoint=>{
+        message.success("删除事件点成功！");
+        this.setState({infoBoxVisible:false},()=>{
+            const points = this.ePoints;
+            points.drawPoints.forEach((item,idx,arr)=>{
+                if(item.epId === epoint.epId)
+                    arr.splice(idx,1);
+            })
+            points.remPoints.forEach((item,idx,arr)=>{
+                if(item.epId === epoint.epId)
+                    arr.splice(idx,1);
+            })
+            this.reDrawEPoints();
+        });
+    }
+
+
     componentDidMount() {
         let map = new BMap.Map('map-container',
             {
@@ -296,6 +328,48 @@ class MapApp extends React.Component{
     render() {
 
         const {Panel} = Collapse;
+
+        const checkBox = (
+            <div className="cg-container">
+                <Checkbox.Group
+                                style={{width:'100%'}}
+                                defaultValue={this.state.checked}
+                                onChange={this.onChecked}>
+
+                    <Row gutter={[0,10]} align="middle" >
+                        <Col span={20}>
+                            <Checkbox value={1}>已完成</Checkbox>
+                        </Col>
+                        <Col span={4}>
+                            <img src={'/star-fill.png'}
+                                 alt={'star-fill.png'}
+                                 height={'20px'} width={'20px'}/>
+                        </Col>
+                    </Row>
+
+                    <Row gutter={[0,10]} align="middle" >
+                        <Col span={20}>
+                            <Checkbox value={0}>未完成</Checkbox>
+                        </Col>
+                        <Col span={4}>
+                            <img src={'/star-empty.png'}
+                                 alt={'star-empty.png'}
+                                 height={'20px'} width={'20px'}/>
+                        </Col>
+                    </Row>
+                    {/*<Row gutter={[0,10]} align="middle" >*/}
+                    {/*    <Col span={20}>*/}
+                    {/*        <Checkbox value={2}>已完成并验证</Checkbox>*/}
+                    {/*    </Col>*/}
+                    {/*    <Col span={4}>*/}
+                    {/*        <img src={'/star-fill.png'}*/}
+                    {/*             alt={'star-fill.png'}*/}
+                    {/*             height={'20px'} width={'20px'}/>*/}
+                    {/*    </Col>*/}
+                    {/*</Row>*/}
+                </Checkbox.Group>
+            </div>);
+
         return(
             <div id="map-app" className="map-app">
                 <Row type="flex" align="middle">
@@ -310,38 +384,28 @@ class MapApp extends React.Component{
                                 </div>
                             </Col>
                             <Col >
-                                <div className="eptype-container">
-                                    <Collapse>
-                                        <Panel header={'显示类型'}>
-                                            <div className="cg-container">
-                                                <Checkbox.Group size=""
-                                                                options={this.ckOptions}
-                                                                defaultValue={this.state.checked}
-                                                                onChange={this.onChecked}/>
-                                            </div>
-                                            {/*<Row type="flex" justify="center">*/}
-
-                                            {/*</Row>*/}
-                                        </Panel>
-                                    </Collapse>
-                                </div>
                             </Col>
                         </Row>
                     </Col>
                     <Col  span={12}>
                         <Row type="flex" align="middle" justify="end" >
                             <Col>
-
+                                <div className="eptype-container">
+                                    <Popover placement={"bottom"} content={checkBox}>
+                                        <Button size={'large'} style={{width:'100%'}}>事件点类型</Button>
+                                    </Popover>
+                                </div>
                             </Col>
 
                             <Col>
                                 <div className="search-container">
                                     <Input.Group compact size={'large'}>
-                                        <Select defaultValue={"地图"} style={{width:'25%'}} size={'large'}>
+                                        <Select defaultValue={"地图"} style={{width:'25%'}}
+                                                size={'large'} disabled={true}>
                                             <Select.Option value={"地图"}>地图</Select.Option>
                                             <Select.Option value={"事件点"}>事件点</Select.Option>
                                         </Select>
-                                        <Search placeholder="input search text"
+                                        <Search placeholder="未实现功能" disabled={true}
                                                 onSearch={value => console.log(value)}
                                                 style={{width:'75%'}}/>
                                     </Input.Group>
@@ -373,6 +437,7 @@ class MapApp extends React.Component{
                                 child={self=>{this.$infobox = self;}}
                                 onLogoutSuccess={this.onLogoutSuccess}
                                 onAddEPointSuccess={this.onAddEPointSuccess}
+                                onDeleteSuccess={this.onDeleteEpointSuccess}
                                 />
                         </Drawer>
                     </Col>

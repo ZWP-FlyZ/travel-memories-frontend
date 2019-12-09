@@ -27,6 +27,11 @@ class InfoBoxComponent extends React.Component{
             ePTextInfoUpdateLoading:false,
             waitingTextInfo:true,
             disableTextInfo:true,
+
+            // 事件点删除
+            deleteLoading:false,
+
+
             // 用户信息
             uid:0,
             username:'',
@@ -318,6 +323,36 @@ class InfoBoxComponent extends React.Component{
                 }
             })
         }
+    }
+
+    onDeleteEPoint = ()=>{
+        const epoint = this.props.data
+        this.setState({deleteLoading:true});
+        Axios({
+            url:'/api/epoint/delete',
+            method:'get',
+            params:{
+                epId:epoint.epId,
+            },
+        }).then(response=>{
+            this.setState({deleteLoading:false});
+            console.debug('onDeleteEPoint',response);
+            const res = response.data;
+            if(res.code===1000){
+                console.debug('删除事件点成功！');
+                this.props.onDeleteSuccess(epoint);
+            }else{
+                message.error("删除事件点失败！");
+            }
+        }).catch(e=>{
+            this.setState({deleteLoading:false});
+            if(Axios.isCancel(e)){
+                console.log("删除事件点取消");
+            }else{
+                message.error("未知错误！");
+                console.log(e);
+            }
+        })
 
     }
 
@@ -577,14 +612,15 @@ class InfoBoxComponent extends React.Component{
                      style={{top:'13px'}}>
                     <Row gutter={[8,16]}>
                         <Col span={10}>
-                            <Button style={{width:'100%'}}>锁定</Button>
+                            <Button disabled={true} style={{width:'100%'}}>锁定</Button>
                         </Col>
                         <Col span={14}>
                             <Popconfirm title={'确认删除该事件点？'}
                                         okText="确认" cancelText="取消"
                                         okType={'danger'}
-                                        onConfirm={e => message.success('事件点删除成功！')}>
+                                        onConfirm={this.onDeleteEPoint}>
                                 <Button type={'danger'}
+                                        loading={this.state.deleteLoading}
                                         style={{width:'100%'}}>删除</Button>
                             </Popconfirm>
 
