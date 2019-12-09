@@ -113,9 +113,32 @@ class InfoBoxComponent extends React.Component{
     }
 
     onLogout = e=>{
-        if(this.props.onLogoutSuccess != null){
-            this.props.onLogoutSuccess();
-        }
+        this.setState({logoutLoading:true});
+        Axios({
+            url:'/api/logout',
+            method:'get',
+        }).then(response=>{
+            this.setState({logoutLoading:false});
+            console.log(response);
+            const res = response.data;
+            if(res.code===1000){
+                //登出成功
+                if(this.props.onLogoutSuccess != null){
+                    this.props.onLogoutSuccess();
+                }
+            }else{
+                message.error("登出失败")
+            }
+
+        }).catch(e=>{
+            this.setState({logoutLoading:false});
+            if(Axios.isCancel(e)){
+                console.log("登出取消");
+            }else{
+                message.error("未知错误！");
+                console.log(e);
+            }
+        })
     }
 
     onAddEPointClick =e=>{
@@ -304,6 +327,7 @@ class InfoBoxComponent extends React.Component{
                     epoint.epTime=curstate.epTime
                     epoint.epType=curstate.epType
                     message.success("更新事件点属性成功！")
+                    this.props.onUpdateAtrrSuccess(epoint);
                 }else if(res.code === 1006){
                     message.error("更新事件点属性失败！属性格式不符合要求！");
                     this.setState({ePointUpdateLoading:false});

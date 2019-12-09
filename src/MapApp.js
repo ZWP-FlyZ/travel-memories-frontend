@@ -68,9 +68,10 @@ class MapApp extends React.Component{
     // checkbox筛选回调
     onChecked =checked=>{
         console.log(checked);
-        this.setState({checked:checked})
-        this.choseEPoints(checked);
-        this.reDrawEPoints();
+        this.setState({checked:checked},()=>{
+            this.choseEPoints(checked);
+            this.reDrawEPoints();
+        })
     }
     // 点击用户头像回调
     onClickUser =e=>{
@@ -274,7 +275,6 @@ class MapApp extends React.Component{
         })
     }
 
-
     onMapTypeChange = e=>{
         const v = e.target.value;
         if(v===0)
@@ -299,6 +299,12 @@ class MapApp extends React.Component{
             })
             this.reDrawEPoints();
         });
+    }
+
+    // 当更新某个事件点属性成功后回调
+    onUpdateEpointAtrrSuccess = epoint=>{
+        this.choseEPoints(this.state.checked);
+        this.reDrawEPoints();
     }
 
 
@@ -438,6 +444,7 @@ class MapApp extends React.Component{
                                 onLogoutSuccess={this.onLogoutSuccess}
                                 onAddEPointSuccess={this.onAddEPointSuccess}
                                 onDeleteSuccess={this.onDeleteEpointSuccess}
+                                onUpdateAtrrSuccess={this.onUpdateEpointAtrrSuccess}
                                 />
                         </Drawer>
                     </Col>
