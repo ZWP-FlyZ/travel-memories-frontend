@@ -15,7 +15,6 @@ class InfoBoxComponent extends React.Component{
         this.state = {
             //状态
             addEPointLoading:false,
-            logoutLoading:false,
 
             // 事件点属性相关状态
             showEPointUpdateBtn:0,
@@ -32,9 +31,6 @@ class InfoBoxComponent extends React.Component{
             deleteLoading:false,
 
 
-            // 用户信息
-            uid:0,
-            username:'',
             // 事件点信息
             epTitle:'',
             epAddr:'',
@@ -67,13 +63,6 @@ class InfoBoxComponent extends React.Component{
                 epTimeMoment:m,
                 epType:1,
                 addEPointLoading:false,
-            });
-        }else if(this.props.type==='user_info'){
-            this.setState({
-                // 事件点信息
-                uid:data.uid,
-                username:data.username,
-                logoutLoading:false,
             });
         }else if(this.props.type==='edit_epoint'){
             console.debug(data);
@@ -110,35 +99,6 @@ class InfoBoxComponent extends React.Component{
                 }
             });// end callback
         }
-    }
-
-    onLogout = e=>{
-        this.setState({logoutLoading:true});
-        Axios({
-            url:'/api/logout',
-            method:'get',
-        }).then(response=>{
-            this.setState({logoutLoading:false});
-            console.log(response);
-            const res = response.data;
-            if(res.code===1000){
-                //登出成功
-                if(this.props.onLogoutSuccess != null){
-                    this.props.onLogoutSuccess();
-                }
-            }else{
-                message.error("登出失败")
-            }
-
-        }).catch(e=>{
-            this.setState({logoutLoading:false});
-            if(Axios.isCancel(e)){
-                console.log("登出取消");
-            }else{
-                message.error("未知错误！");
-                console.log(e);
-            }
-        })
     }
 
     onAddEPointClick =e=>{
@@ -389,37 +349,12 @@ class InfoBoxComponent extends React.Component{
         const boxType = this.props.type;
         if (boxType === '')
             return (<div>EMPTY</div>);
-        else if (boxType === 'user_info')
-            return this.userinfo();
         else if (boxType === 'add_epoint')
             return this.addEpoint();
         else if (boxType === 'edit_epoint')
             return this.editEpoint();
     }
-    userinfo(){
-        return (
-            <div style={{width:'100%',height:'100%'}}>
-                <Row gutter={[16,32]}>
-                    <Col >
-                        <Input addonBefore="用户ID" value={this.state.uid} disabled={true} />
-                    </Col>
-                </Row>
-                <Row gutter={[16,32]}>
-                    <Col >
-                        <Input addonBefore="用户名" value={this.state.username} disabled={true}/>
-                    </Col>
-                </Row>
-                <Row gutter={[16,32]}>
-                    <Col >
-                        <Button style={{width:'100%'}}
-                                type="danger"
-                                onClick={this.onLogout}
-                                loading={this.state.logoutLoading}
-                        >登出</Button>
-                    </Col>
-                </Row>
-            </div>);
-    }
+
     addEpoint(){
         return (
             <div style={{width:'100%',height:'100%'}}>
@@ -624,7 +559,7 @@ class InfoBoxComponent extends React.Component{
                                     onChange={e=>{this.setState({epTiText:e.target.value,
                                         showEPTextInfoUpdateBtn:1})}}
                                     placeholder="无数据"
-                                    autoSize={{ minRows: 14, maxRows: 14 }}
+                                    autoSize={{ minRows: 15, maxRows: 15 }}
                                     disabled={this.state.disableTextInfo}
                                     value={this.state.epTiText}
                                 />
@@ -633,7 +568,7 @@ class InfoBoxComponent extends React.Component{
                     </Row>
                 </div>
                 <div className={'border-edit-epoint-button'}
-                     style={{top:'13px'}}>
+                     style={{top:'10px'}}>
                     <Row gutter={[8,16]}>
                         <Col span={10}>
                             <Button disabled={true} style={{width:'100%'}}>锁定</Button>

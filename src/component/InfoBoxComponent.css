@@ -35,11 +35,12 @@
 }
 
 .border-edit-epoint-button {
-    border-style: solid;
+    border-style: dashed ;
     border-width: 1px;
-    border-color: #cccccc;
+    border-color: red;
     border-radius: 4px;
     position: relative;
+    float: bottom;
     padding: 6px 10px;
     width:100%;
     background-color: aliceblue;

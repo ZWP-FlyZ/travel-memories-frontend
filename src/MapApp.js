@@ -7,6 +7,7 @@ import {message, Row, Col, Checkbox, Avatar, Input,
         Select, Drawer, Radio,Popover,Button} from 'antd'
 import Search from "antd/es/input/Search";
 import Axios from 'axios'
+import UserInfoBoxComponent from "./component/UserInfoBoxComponent";
 
 class MapApp extends React.Component{
 
@@ -91,15 +92,16 @@ class MapApp extends React.Component{
         console.debug("onClickUser login=",this.state.hasLogin)
         if(this.state.hasLogin){
             // 已经登录
-            if(this.state.infoBoxVisible
-                &&this.state.infoBoxType !== 'user_info') return ;
+            if(this.state.infoBoxVisible||(
+                this.state.userInfoBoxVisible&&
+                this.state.userInfoBoxType !== 'user_info')) return ;
             console.debug("user has login")
             this.setState({
-                infoBoxTitle:'用户信息',
-                infoBoxVisible:true,
-                infoBoxType:'user_info',
-                infoBoxData:this.state.user},
-                ()=>{this.$infobox.updateInfoBox();})
+                userInfoBoxTitle:'用户信息',
+                userInfoBoxVisible:true,
+                userInfoBoxType:'user_info',
+                userInfoBoxData:this.state.user},
+                ()=>{this.$userInfoBox.updateInfoBox();})
         }else{
             // 未登录
             this.setState({loginVisible:true})
@@ -132,10 +134,10 @@ class MapApp extends React.Component{
             user:null,
             loginDefaultIcon:'user',
             loginDefaultM:'',
-            infoBoxTitle:'EMPTY',
-            infoBoxVisible:false,
-            infoBoxType:'',
-            infoBoxData:{}})
+            userInfoBoxTitle:'EMPTY',
+            userInfoBoxVisible:false,
+            userInfoBoxType:'',
+            userInfoBoxData:{}})
         this.ePoints={
             drawPoints:[],// 需要被添加到地图的事件点
             remPoints:[]// 其余事件点
@@ -166,8 +168,9 @@ class MapApp extends React.Component{
             message.error("登录之后添加事件点！");
             return ;
         }
-        if(this.state.infoBoxVisible
-            &&this.state.infoBoxType !== 'add_epoint') return ;
+        if( this.state.userInfoBoxVisible||
+            (this.state.infoBoxVisible
+            &&this.state.infoBoxType !== 'add_epoint')) return ;
         if(!!this.pointToAdd){
             this.map.removeOverlay(this.pointToAdd);
         }
@@ -216,12 +219,17 @@ class MapApp extends React.Component{
 
     onCloseUserInfoBox=e=>{
         this.setState({userInfoBoxVisible:false})
+        this.$userInfoBox.closeInfoBox();
     }
 
     // 当InfoBox准备就绪时，更新内部内容。
     onReadyInfoBox = visible =>{
-        if(visible)
-            this.$infobox.updateInfoBox();
+        // if(visible)
+        //     this.$infobox.updateInfoBox();
+    }
+    onReadyUserInfoBox = visible =>{
+        // if(visible)
+        //     this.$userInfoBox.updateInfoBox();
     }
     // 添加事件点完成回调
     onAddEPointSuccess = e=>{
@@ -262,8 +270,9 @@ class MapApp extends React.Component{
     // 事件点点击回调
     onEPointClick = (e)=>{
         console.debug('点击事件点',e.target);
-        if(this.state.infoBoxVisible
-            &&this.state.infoBoxType !== 'edit_epoint') return ;
+        if(this.state.userInfoBoxVisible||
+            (this.state.infoBoxVisible
+            &&this.state.infoBoxType !== 'edit_epoint')) return ;
         // setAnimation(window.BMAP_ANIMATION_BOUNCE);
         if(!!this.markToEdit){
             this.markToEdit.setAnimation(null);
@@ -452,7 +461,7 @@ class MapApp extends React.Component{
                             placement="left"
                             closable={true}
                             onClose={this.onCloseUserInfoBox}
-                            afterVisibleChange={null}
+                            afterVisibleChange={this.onReadyUserInfoBox}
                             visible={this.state.userInfoBoxVisible}
                             mask={false}
                             getContainer={false}
@@ -460,6 +469,12 @@ class MapApp extends React.Component{
                             destroyOnClose={true}
                             style={{ position: 'relative',
                                 height:"50vh"}}>
+                            <UserInfoBoxComponent
+                                type={this.state.userInfoBoxType}
+                                data={this.state.userInfoBoxData}
+                                child={self=>{this.$userInfoBox = self;}}
+                                onLogoutSuccess={this.onLogoutSuccess}
+                            />
                         </Drawer>
                         {/*事件点相关弹出框*/}
                         <Drawer
