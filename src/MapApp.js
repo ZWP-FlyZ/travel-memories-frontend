@@ -10,10 +10,7 @@ import Axios from 'axios'
 
 class MapApp extends React.Component{
 
-    ckOptions = [
-        {label:"已发生",value:1},
-        {label:"已发生并验证",value:2},
-        {label:"未发生",value:0},]
+
     myGeo = new BMap.Geocoder();
     constructor(props, context) {
         super(props, context);
@@ -44,6 +41,14 @@ class MapApp extends React.Component{
         infoBoxVisible:false,
         infoBoxType:'',
         infoBoxData:{},
+
+        //用户信息框相关状态
+        userInfoBoxTitle:'EMPTY',
+        userInfoBoxVisible:false,
+        userInfoBoxType:'',
+        userInfoBoxData:{},
+
+
         // checkbox相关状态
         checked:[0,1,2],
     }
@@ -143,10 +148,12 @@ class MapApp extends React.Component{
         // var infoWindow = new BMap.InfoWindow(" <div> <Button>I</Button></div> ", {width:300,height: 300});  // 创建信息窗口对象
         // this.map.openInfoWindow(infoWindow, event.point);
         // this.setState({
-        //     infoBoxTitle:'事件点详情',
-        //     infoBoxVisible:true,
-        //     infoBoxType:'edit_epoint',
-        //     infoBoxData:null})
+        //     userInfoBoxTitle:'EMPTY',
+        //     userInfoBoxVisible:true,
+        //     userInfoBoxType:'',
+        //     userInfoBoxData:{},})
+
+
     }
     // 双击地图事件
     onDoubleClickMap = event=>{
@@ -206,6 +213,11 @@ class MapApp extends React.Component{
             this.markToEdit.setAnimation(null);
         }
     }
+
+    onCloseUserInfoBox=e=>{
+        this.setState({userInfoBoxVisible:false})
+    }
+
     // 当InfoBox准备就绪时，更新内部内容。
     onReadyInfoBox = visible =>{
         if(visible)
@@ -434,6 +446,22 @@ class MapApp extends React.Component{
 
                 <Row type="flex">
                     <Col span={5}>
+                        {/*用户登录，登出，用户信息处理相关弹出框*/}
+                        <Drawer
+                            title={this.state.userInfoBoxTitle}
+                            placement="left"
+                            closable={true}
+                            onClose={this.onCloseUserInfoBox}
+                            afterVisibleChange={null}
+                            visible={this.state.userInfoBoxVisible}
+                            mask={false}
+                            getContainer={false}
+                            width={300}
+                            destroyOnClose={true}
+                            style={{ position: 'relative',
+                                height:"50vh"}}>
+                        </Drawer>
+                        {/*事件点相关弹出框*/}
                         <Drawer
                                 title={this.state.infoBoxTitle}
                                 placement="left"
