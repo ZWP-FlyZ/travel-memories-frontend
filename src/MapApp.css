@@ -39,6 +39,13 @@
     right: 10px;
 }
 
+.location-container{
+    position: absolute;
+    z-index: 2;
+    bottom: 10px;
+    right: 200px;
+}
+
 
 .user-container-user-icon{
     top: 10px;

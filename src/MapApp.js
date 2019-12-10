@@ -3,7 +3,7 @@ import './MapApp.css'
 import BMap from 'BMap';
 import LogInComponent from './component/LogInComponent';
 import InfoBoxComponent from './component/InfoBoxComponent'
-import {message, Row, Col, Checkbox, Avatar, Input,
+import {message, Row, Col, Checkbox, Avatar, Input,Icon,
         Select, Drawer, Radio,Popover,Button} from 'antd'
 import Search from "antd/es/input/Search";
 import Axios from 'axios'
@@ -12,7 +12,10 @@ import UserInfoBoxComponent from "./component/UserInfoBoxComponent";
 class MapApp extends React.Component{
 
 
+    // 地址逆解析工具
     myGeo = new BMap.Geocoder();
+    // 定位工具
+    location = new BMap.Geolocation();
     constructor(props, context) {
         super(props, context);
         // this.onLoginSuccess = this.onLoginSuccess.bind(this);
@@ -337,21 +340,31 @@ class MapApp extends React.Component{
         this.reDrawEPoints();
     }
 
+    doLocation = ()=>{
+        this.location.getCurrentPosition(e=>{
+            console.debug('location',e);
+            if(e!=null){
+                this.map.panTo(e.point);
+            }
+        })
+    }
+
 
     componentDidMount() {
         let map = new BMap.Map('map-container',
             {
                 enableMapClick:false,// 关闭默认点击事件
             });
-        let cent = new BMap.Point(116.404, 39.915);
-        map.centerAndZoom(cent,15);
-        map.enableScrollWheelZoom();
         // map.disableDoubleClickZoom();
         // map.addControl(new BMap.MapTypeControl(
         //     {   anchor:window.BMAP_ANCHOR_TOP_LEFT,
         //         offset: new BMap.Size(20, 20),
         //         // mapTypes: [2,2],
         //     }));
+
+        let cent = new BMap.Point(116.404, 39.915);
+        map.centerAndZoom(cent,15);
+        map.enableScrollWheelZoom();
         map.addControl(new BMap.ScaleControl());
         // map.addControl(new BMap.NavigationControl({type:1}))
         map.addEventListener('click',this.onClickMap);
@@ -359,6 +372,10 @@ class MapApp extends React.Component{
         map.addEventListener('rightclick',this.onRightClickMap);
         map.addEventListener('rightdblclick',this.onRightDoubleClickMap);
         this.map = map;
+
+        // 定位
+        this.doLocation();
+
     }
 
     render() {
@@ -516,6 +533,16 @@ class MapApp extends React.Component{
                     <LogInComponent visible = {this.state.loginVisible}
                                     loginSuccess={this.onLoginSuccess}
                                     loginCancel={this.onLoginCancel} />
+                </div>
+
+
+                <div className={'location-container'}>
+                    <Button shape={'circle'}
+                            size={'lager'}
+                            style={{width:'30px',height:'30px'}}
+                            onClick={this.doLocation}>
+                        <Icon type="close-circle" style={{fontSize:'30px',color:'black'}} />
+                    </Button>
                 </div>
 
                 <div className={'map-type-container'}>
