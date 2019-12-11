@@ -1,5 +1,5 @@
 import React from 'react'
-import {Input,Row,Col,Button,Spin,DatePicker,Radio,message,Icon,Popconfirm} from 'antd'
+import {Input, Row, Col, Button, Spin, DatePicker, Radio, message, Icon, Popconfirm, AutoComplete} from 'antd'
 import locale from 'antd/es/date-picker/locale/zh_CN';
 import moment from 'moment';
 import Axios from 'axios'
@@ -20,6 +20,8 @@ class InfoBoxComponent extends React.Component{
             showEPointUpdateBtn:0,
             ePointUpdateLoading:false,
             waitingEPoingInfo:true,
+            titlesDatasource:[],
+
 
             //事件点描述相关状态
             showEPTextInfoUpdateBtn:0,
@@ -29,7 +31,6 @@ class InfoBoxComponent extends React.Component{
 
             // 事件点删除
             deleteLoading:false,
-
 
             // 事件点信息
             epTitle:'',
@@ -53,6 +54,8 @@ class InfoBoxComponent extends React.Component{
         let data = this.props.data;
         if(this.props.type==='add_epoint'){
             let m = moment();
+            let ds = [];
+            data.titles.forEach((t,_,__)=>{ds.push(t)})
             this.setState({
                 // 事件点信息
                 epTitle:data.title,
@@ -63,6 +66,7 @@ class InfoBoxComponent extends React.Component{
                 epTimeMoment:m,
                 epType:1,
                 addEPointLoading:false,
+                titlesDatasource:ds
             });
         }else if(this.props.type==='edit_epoint'){
             console.debug(data);
@@ -366,10 +370,13 @@ class InfoBoxComponent extends React.Component{
                     </Row>
                     <Row gutter={[16,32]}>
                         <Col >
-                            <Input addonBefore="标题"
-                                   value={this.state.epTitle}
-                                   onChange={e => {this.setState({epTitle:e.target.value})}}
-                            />
+                            <AutoComplete style={{width:'100%'}}
+                                          value={this.state.epTitle}
+                                          onChange={e => {this.setState({epTitle:e})}}
+                                          dataSource={this.state.titlesDatasource}
+                            >
+                                <Input addonBefore="标题"/>
+                            </AutoComplete>
                         </Col>
                     </Row>
                     <Row gutter={[16,32]}>

@@ -78,7 +78,7 @@ class SearchComponent extends React.Component{
                 point = epoints.drawPoints[idx];
                 if(this.strMatch(point.epTitle,target)||
                     this.strMatch(point.epAddr,target)){
-                    datasource.push({text:point.epTitle,
+                    datasource.push({text:point.epTitle+'-'+point.epAddr,
                         value:this.curSearchList.length})
                     this.curSearchList.push(point);
                 }
@@ -88,7 +88,7 @@ class SearchComponent extends React.Component{
                 point = epoints.remPoints[idx];
                 if(this.strMatch(point.epTitle,target)||
                     this.strMatch(point.epAddr,target)){
-                    datasource.push({text:point.epTitle,
+                    datasource.push({text:point.epTitle+'-'+point.epAddr,
                         value:this.curSearchList.length})
                     this.curSearchList.push(point);
                 }
@@ -100,8 +100,9 @@ class SearchComponent extends React.Component{
     onDropDownSelect=e=>{
         this.curSelect = this.curSearchList[e];
         let tmp = this.state.resultData[e].text;
-
-        this.setState({searchText:tmp.split('-')[0]})
+        this.setState({searchText:tmp.split('-')[0]},()=>{
+            this.onClickGo();
+        })
     }
 
     onClickGo=e=>{

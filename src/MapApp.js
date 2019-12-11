@@ -187,15 +187,20 @@ class MapApp extends React.Component{
                 lng:event.point.lng,
                 lat:event.point.lat,
                 title:'',
+                titles:[],
                 address:''
             }
             if(res){
                 data.address = res.address;
                 data.title = res.address;
                 const surds = res.surroundingPois;
-                if(surds.length>0)
+                if(surds.length>0){
                     data.title = surds[0].title;
-
+                    surds.forEach((item,_,__)=>{
+                        data.titles.push(item.title);
+                    })
+                }
+                data.titles.push(res.address);
             }
             this.setState({
                 infoBoxTitle:'创建事件点',
