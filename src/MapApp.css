@@ -42,7 +42,7 @@
 .location-container{
     position: absolute;
     z-index: 2;
-    bottom: 10px;
+    bottom: 4px;
     right: 200px;
 }
 
@@ -82,8 +82,7 @@
 
     position: relative;
     z-index: 3;
-    max-width: 350px;
-    min-width: 350px;
+    width: 450px;
     padding-right: 10px;
     /*background-color: aqua;*/
     /*opacity:0.3;*/

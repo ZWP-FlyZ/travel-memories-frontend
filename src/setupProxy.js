@@ -10,6 +10,15 @@ module.exports = function(app) {
             },
         })
     );
+    app.use(proxy('/baiduapi', {
+            target: "http://api.map.baidu.com",
+            secure: false,
+            changeOrigin: true,
+            pathRewrite: {
+                "^/baiduapi": "/"
+            },
+        })
+    );
 
 };
 

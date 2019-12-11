@@ -5,9 +5,10 @@ import LogInComponent from './component/LogInComponent';
 import InfoBoxComponent from './component/InfoBoxComponent'
 import {message, Row, Col, Checkbox, Avatar, Input,Icon,
         Select, Drawer, Radio,Popover,Button} from 'antd'
-import Search from "antd/es/input/Search";
 import Axios from 'axios'
 import UserInfoBoxComponent from "./component/UserInfoBoxComponent";
+import SearchComponent from './component/SearchComponent'
+
 
 class MapApp extends React.Component{
 
@@ -16,6 +17,9 @@ class MapApp extends React.Component{
     myGeo = new BMap.Geocoder();
     // 定位工具
     location = new BMap.Geolocation();
+    // 地址自动补全工具
+
+
     constructor(props, context) {
         super(props, context);
         // this.onLoginSuccess = this.onLoginSuccess.bind(this);
@@ -305,6 +309,7 @@ class MapApp extends React.Component{
             mk.epoint = point;
             mk.addEventListener('click',this.onEPointClick);
             this.map.addOverlay(mk);
+            point.marker=mk;
         })
     }
 
@@ -349,6 +354,18 @@ class MapApp extends React.Component{
         })
     }
 
+    onSearchMapSuccess=result=>{
+        if(result==null) return ;
+        this.map.centerAndZoom(new BMap.Point(result.location.lng,
+                            result.location.lat),18);
+    }
+
+    onSearchEpointSuccess=result=>{
+        if(result==null) return ;
+        this.map.centerAndZoom(new BMap.Point(result.epLng, result.epLat),18);
+        // this.map.panTo();
+    }
+
 
     componentDidMount() {
         let map = new BMap.Map('map-container',
@@ -376,6 +393,12 @@ class MapApp extends React.Component{
         // 定位
         this.doLocation();
 
+
+
+
+
+
+
     }
 
     render() {
@@ -383,7 +406,7 @@ class MapApp extends React.Component{
         const checkBox = (
             <div className="cg-container">
                 <Checkbox.Group
-                                disabled={this.state.infoBoxVisible}
+                                disabled={this.state.infoBoxVisible || !this.state.hasLogin}
                                 style={{width:'100%'}}
                                 defaultValue={this.state.checked}
                                 onChange={this.onChecked}>
@@ -425,7 +448,7 @@ class MapApp extends React.Component{
         return(
             <div id="map-app" className="map-app">
                 <Row type="flex" align="middle">
-                    <Col span={12} >
+                    <Col span={4} >
                         <Row type="flex" align="middle">
                             <Col >
                                 <div className="user-container">
@@ -439,7 +462,7 @@ class MapApp extends React.Component{
                             </Col>
                         </Row>
                     </Col>
-                    <Col  span={12}>
+                    <Col  span={20}>
                         <Row type="flex" align="middle" justify="end" >
                             <Col>
                                 <div className="eptype-container">
@@ -453,16 +476,11 @@ class MapApp extends React.Component{
 
                             <Col>
                                 <div className="search-container">
-                                    <Input.Group compact size={'large'}>
-                                        <Select defaultValue={"地图"} style={{width:'25%'}}
-                                                size={'large'} disabled={true}>
-                                            <Select.Option value={"地图"}>地图</Select.Option>
-                                            <Select.Option value={"事件点"}>事件点</Select.Option>
-                                        </Select>
-                                        <Search placeholder="未实现功能" disabled={true}
-                                                onSearch={value => console.log(value)}
-                                                style={{width:'75%'}}/>
-                                    </Input.Group>
+                                    <SearchComponent
+                                        onSearchMapSuccess={this.onSearchMapSuccess}
+                                        onSearchEpointSuccess={this.onSearchEpointSuccess}
+                                        epoints={this.state.hasLogin?this.ePoints:null}
+                                    />
                                 </div>
                             </Col>
                         </Row>
@@ -538,10 +556,9 @@ class MapApp extends React.Component{
 
                 <div className={'location-container'}>
                     <Button shape={'circle'}
-                            size={'lager'}
-                            style={{width:'30px',height:'30px'}}
+                            size={'large'}
                             onClick={this.doLocation}>
-                        <Icon type="close-circle" style={{fontSize:'30px',color:'black'}} />
+                        <Icon type="close-circle" style={{fontSize:'30px',color:'black',paddingTop:'2px'}} />
                     </Button>
                 </div>
 
