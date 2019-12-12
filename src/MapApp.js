@@ -464,6 +464,10 @@ class MapApp extends React.Component{
                 </Checkbox.Group>
             </div>);
 
+
+        const titleBtn = (
+            <Button onClick={()=>this.$mediaInfoBox.showFilesModal()}>管理文件</Button>
+        );
         return(
             <div id="map-app" className="map-app">
                 <Row type="flex" align="middle" gutter={[0,0]}>
@@ -562,19 +566,18 @@ class MapApp extends React.Component{
                     <Col span={10}>
                         <div className={'media-info-container'}>
                             <Drawer
-                                title={<Button>管理文件</Button>}
+                                title={titleBtn}
                                 placement="right"
                                 closable={true}
                                 onClose={this.onCloseMediaInfoBox}
                                 afterVisibleChange={null}
-                                visible={this.state.mediaInfoBoxVisible&&false}
+                                visible={this.state.mediaInfoBoxVisible}
                                 mask={false}
                                 getContainer={false}
                                 destroyOnClose={true}
                                 width={350}
                                 style={{position: 'absolute', opacity:1}}>
                                 <MediaInfoBoxComponent
-
                                     child={self=>{this.$mediaInfoBox = self;}}
                                 />
                             </Drawer>

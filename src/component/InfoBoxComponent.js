@@ -458,7 +458,7 @@ class InfoBoxComponent extends React.Component{
                                                 this.updateEpointAtrr();
                                         }}
                                         style={{display:this.displaystr[this.state.showEPointUpdateBtn]}} >
-                                    <Icon type="sync" spin={this.state.ePointUpdateLoading}
+                                    <Icon type="cloud-upload" spin={this.state.ePointUpdateLoading}
                                           style={{fontSize:'15px',color:'red'}}
                                     />
                                 </Button>
@@ -552,7 +552,7 @@ class InfoBoxComponent extends React.Component{
                                             this.updateTextInfo();
                                         }}
                                         style={{display:this.displaystr[this.state.showEPTextInfoUpdateBtn]}}>
-                                    <Icon type="sync" spin={this.state.ePTextInfoUpdateLoading}
+                                    <Icon type="cloud-upload" spin={this.state.ePTextInfoUpdateLoading}
                                           style={{fontSize:'15px',color:'red'}}
                                     />
                                 </Button>
