@@ -1,6 +1,5 @@
 import React from 'react'
 import {Button, Col, Input, message, Row} from "antd";
-import moment from "./InfoBoxComponent";
 import Axios from "axios";
 // import {Input,Row,Col,Button,Spin,DatePicker,Radio,message,Icon,Popconfirm} from 'antd'
 

@@ -8,7 +8,7 @@ import {message, Row, Col, Checkbox, Avatar, Input,Icon,
 import Axios from 'axios'
 import UserInfoBoxComponent from "./component/UserInfoBoxComponent";
 import SearchComponent from './component/SearchComponent'
-
+import MediaInfoBoxComponent from './component/MediaInfoBoxComponent'
 
 class MapApp extends React.Component{
 
@@ -56,6 +56,9 @@ class MapApp extends React.Component{
         userInfoBoxType:'',
         userInfoBoxData:{},
 
+        //用户信息框相关状态
+        mediaInfoBoxVisible:false,
+        mediaInfoBoxData:{},
 
         // checkbox相关状态
         checked:[0,1,2],
@@ -219,8 +222,9 @@ class MapApp extends React.Component{
     }
     // 点击关闭消息box回调
     onCloseInfoBox = e => {
-        this.setState({infoBoxVisible:false})
+        this.setState({infoBoxVisible:false,mediaInfoBoxVisible:false})
         this.$infobox.closeInfoBox();
+        this.$mediaInfoBox.closeInfoBox();
         if(!!this.pointToAdd){
             this.map.removeOverlay(this.pointToAdd);
         }
@@ -232,6 +236,11 @@ class MapApp extends React.Component{
     onCloseUserInfoBox=e=>{
         this.setState({userInfoBoxVisible:false})
         this.$userInfoBox.closeInfoBox();
+    }
+
+    onCloseMediaInfoBox=e=>{
+        this.setState({mediaInfoBoxVisible:false})
+        this.$mediaInfoBox.closeInfoBox();
     }
 
     // 当InfoBox准备就绪时，更新内部内容。
@@ -294,8 +303,12 @@ class MapApp extends React.Component{
             infoBoxTitle:'事件点详情',
             infoBoxVisible:true,
             infoBoxType:'edit_epoint',
-            infoBoxData:e.target.epoint},
-            ()=>{this.$infobox.updateInfoBox();})
+            infoBoxData:e.target.epoint,
+            mediaInfoBoxVisible:true,
+            mediaInfoBoxData:e.target.epoint,
+            },
+            ()=>{this.$infobox.updateInfoBox();
+                         this.$mediaInfoBox.updateInfoBox()})
         e.target.setAnimation(window.BMAP_ANIMATION_BOUNCE);
         this.map.panTo(e.point);
         this.markToEdit = e.target;
@@ -330,7 +343,8 @@ class MapApp extends React.Component{
     //删除某个事件点后回调
     onDeleteEpointSuccess =epoint=>{
         message.success("删除事件点成功！");
-        this.setState({infoBoxVisible:false},()=>{
+        this.setState({infoBoxVisible:false,
+            mediaInfoBoxVisible:false},()=>{
             const points = this.ePoints;
             points.drawPoints.forEach((item,idx,arr)=>{
                 if(item.epId === epoint.epId)
@@ -452,7 +466,7 @@ class MapApp extends React.Component{
 
         return(
             <div id="map-app" className="map-app">
-                <Row type="flex" align="middle">
+                <Row type="flex" align="middle" gutter={[0,0]}>
                     <Col span={4} >
                         <Row type="flex" align="middle">
                             <Col >
@@ -493,31 +507,32 @@ class MapApp extends React.Component{
                     </Col>
                 </Row>
 
-                <Row type="flex">
+                <Row type="flex" gutter={[0,0]}>
                     <Col span={5}>
                         {/*用户登录，登出，用户信息处理相关弹出框*/}
-                        <Drawer
-                            title={this.state.userInfoBoxTitle}
-                            placement="left"
-                            closable={true}
-                            onClose={this.onCloseUserInfoBox}
-                            afterVisibleChange={this.onReadyUserInfoBox}
-                            visible={this.state.userInfoBoxVisible}
-                            mask={false}
-                            getContainer={false}
-                            width={300}
-                            destroyOnClose={true}
-                            style={{ position: 'relative',
-                                height:"50vh"}}>
-                            <UserInfoBoxComponent
-                                type={this.state.userInfoBoxType}
-                                data={this.state.userInfoBoxData}
-                                child={self=>{this.$userInfoBox = self;}}
-                                onLogoutSuccess={this.onLogoutSuccess}
-                            />
-                        </Drawer>
-                        {/*事件点相关弹出框*/}
-                        <Drawer
+                        <div style={{width:'100%', height:'100%',position:'relative'}}>
+                            <Drawer
+                                title={this.state.userInfoBoxTitle}
+                                placement="left"
+                                closable={true}
+                                onClose={this.onCloseUserInfoBox}
+                                afterVisibleChange={this.onReadyUserInfoBox}
+                                visible={this.state.userInfoBoxVisible}
+                                mask={false}
+                                getContainer={false}
+                                width={300}
+                                destroyOnClose={true}
+                                style={{ position: 'absolute',
+                                    height:"50vh"}}>
+                                <UserInfoBoxComponent
+                                    type={this.state.userInfoBoxType}
+                                    data={this.state.userInfoBoxData}
+                                    child={self=>{this.$userInfoBox = self;}}
+                                    onLogoutSuccess={this.onLogoutSuccess}
+                                />
+                            </Drawer>
+                            {/*事件点相关弹出框*/}
+                            <Drawer
                                 title={this.state.infoBoxTitle}
                                 placement="left"
                                 closable={true}
@@ -530,16 +545,40 @@ class MapApp extends React.Component{
                                 destroyOnClose={true}
                                 style={{ position: 'absolute',
                                     height:"85vh"}}>
-                            <InfoBoxComponent
-                                type={this.state.infoBoxType}
-                                data={this.state.infoBoxData}
-                                child={self=>{this.$infobox = self;}}
-                                onLogoutSuccess={this.onLogoutSuccess}
-                                onAddEPointSuccess={this.onAddEPointSuccess}
-                                onDeleteSuccess={this.onDeleteEpointSuccess}
-                                onUpdateAtrrSuccess={this.onUpdateEpointAtrrSuccess}
+                                <InfoBoxComponent
+                                    type={this.state.infoBoxType}
+                                    data={this.state.infoBoxData}
+                                    child={self=>{this.$infobox = self;}}
+                                    onLogoutSuccess={this.onLogoutSuccess}
+                                    onAddEPointSuccess={this.onAddEPointSuccess}
+                                    onDeleteSuccess={this.onDeleteEpointSuccess}
+                                    onUpdateAtrrSuccess={this.onUpdateEpointAtrrSuccess}
                                 />
-                        </Drawer>
+                            </Drawer>
+                        </div>
+                    </Col>
+                    <Col span={9}/>
+
+                    <Col span={10}>
+                        <div className={'media-info-container'}>
+                            <Drawer
+                                title={<Button>管理文件</Button>}
+                                placement="right"
+                                closable={true}
+                                onClose={this.onCloseMediaInfoBox}
+                                afterVisibleChange={null}
+                                visible={this.state.mediaInfoBoxVisible&&false}
+                                mask={false}
+                                getContainer={false}
+                                destroyOnClose={true}
+                                width={350}
+                                style={{position: 'absolute', opacity:1}}>
+                                <MediaInfoBoxComponent
+
+                                    child={self=>{this.$mediaInfoBox = self;}}
+                                />
+                            </Drawer>
+                        </div>
                     </Col>
 
                 </Row>
