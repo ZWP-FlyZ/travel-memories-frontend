@@ -571,7 +571,7 @@ class MapApp extends React.Component{
                                 closable={true}
                                 onClose={this.onCloseMediaInfoBox}
                                 afterVisibleChange={null}
-                                visible={this.state.mediaInfoBoxVisible}
+                                visible={this.state.mediaInfoBoxVisible||true}
                                 mask={false}
                                 getContainer={false}
                                 destroyOnClose={true}
