@@ -9,13 +9,6 @@ function toDownloadPath(url){return '/api/epoint/files/'+url;}
 
 class MediaInfoBoxComponent extends React.Component{
 
-    datasource=["http://file02.16sucai.com/d/file/2014/0704/e53c868ee9e8e7b28c424b56afe2066d.jpg",
-        'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1576233053226&di=61785702c6ce6f203b06d0d0801887fe&imgtype=0&src=http%3A%2F%2Fgss0.baidu.com%2F9vo3dSag_xI4khGko9WTAnF6hhy%2Fzhidao%2Fpic%2Fitem%2F5366d0160924ab189ee8059f30fae6cd7a890b9f.jpg',
-        "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
-        '/api/epoint/files/1.jpg',
-        '/api/epoint/files/2_20_13ded2a4e_katou-megumi-sakura-3840x2160.png'
-    ]
-
 
     // 文件项定义
     // fileItem = {
@@ -29,57 +22,6 @@ class MediaInfoBoxComponent extends React.Component{
     //         percent:null | 0-100 // 是否加载
     //         isUploadError:false | true
     //      }
-
-    ds=[
-        {
-            fid:0,
-            rowUrl:this.datasource[0],// 原始文件路径
-            previewUrl:this.datasource[0],//预览图文件地址
-            fType:0,//文件类型
-            describe:'花',//文件描述
-            epMiId:0,//媒体文件id
-            percent:null // 是否加载
-        },
-        {
-            fid:1,
-            rowUrl:this.datasource[1],// 原始文件路径
-            previewUrl:this.datasource[1],//预览图文件地址
-            fType:0,//文件类型
-            describe:'女孩',//文件描述
-            epMiId:0,//媒体文件id
-            percent:null // 是否加载
-        },
-        {
-            fid:2,
-            rowUrl:this.datasource[2],// 原始文件路径
-            previewUrl:this.datasource[2],//预览图文件地址
-            fType:0,//文件类型
-            describe:'女孩',//文件描述
-            epMiId:0,//媒体文件id
-            percent:null // 是否加载
-        },
-
-        {
-            fid:3,
-            rowUrl:this.datasource[3],// 原始文件路径
-            previewUrl:this.datasource[3],//预览图文件地址
-            fType:0,//文件类型
-            describe:'女孩',//文件描述
-            epMiId:0,//媒体文件id
-            percent:null // 是否加载
-        },
-        {
-            fid:4,
-            rowUrl:this.datasource[4],// 原始文件路径
-            previewUrl:this.datasource[4],//预览图文件地址
-            fType:0,//文件类型
-            describe:'女孩',//文件描述
-            epMiId:0,//媒体文件id
-            percent:null // 是否加载
-        }
-
-    ]
-
 
     state={
         // 显示管理文件对话框
@@ -103,11 +45,11 @@ class MediaInfoBoxComponent extends React.Component{
             this.getMediaInfoFromService(data);
         else{
             //  重要！！！！！
-            //  infoBoxDatasource和opDataSource 不共用，
+            //  infoBoxDatasource和opDataSource 可能共用，
             let ls = this.formatMediaInfo(data.epMiInfo);
             this.setState({
                 infoBoxDatasource:ls,
-                opDataSource:[...ls] // 深复制
+                opDataSource:[...ls]
             });
         }
     }
@@ -126,10 +68,11 @@ class MediaInfoBoxComponent extends React.Component{
             // 成功回调
             const res = respone.data;
             if(res.code === 1000){
+                // 深复制注意
                 let ls = this.formatMediaInfo(res.data);
                 this.setState({
                     infoBoxDatasource:ls,
-                    opDataSource:ls});
+                    opDataSource:[...ls]});
                 epoint.epMiInfo = res.data;
             }else{
                 message.error("获取媒体文件失败！");
@@ -152,7 +95,7 @@ class MediaInfoBoxComponent extends React.Component{
                 fid:item.epMiId,
                 fName:item.epMiPath,
                 rowUrl:item.epMiPath,// 原始文件路径
-                previewUrl:item.epMiPath,//预览图文件地址
+                previewUrl:'p-'+item.epMiPath,//预览图文件地址
                 fType:item.epMiType,//文件类型
                 describe:item.epMiDesc,//文件描述
                 epMiId:item.epMiId,//媒体文件id
@@ -184,7 +127,7 @@ class MediaInfoBoxComponent extends React.Component{
             "epMiPath": fileType.rowUrl,
             "uid": data.uid
         }
-        this.props.data.epMiInfo.push(mi);
+        this.props.data.epMiInfo.unshift(mi);
     }
 
 
@@ -231,7 +174,7 @@ class MediaInfoBoxComponent extends React.Component{
                     t.epMiId = info.epMiId;
                     t.percent=null;
                     t.rowUrl=info.epMiPath;
-                    t.previewUrl=info.epMiPath;
+                    t.previewUrl='p-'+info.epMiPath;
                     t.fType = info.epMiType;
                     this.onUploadSuccess(t);
                 }
@@ -256,12 +199,25 @@ class MediaInfoBoxComponent extends React.Component{
         console.debug('onModalItemPreviewing',fileItem)
     }
 
-
-
     beforeUpload=(file,fileList)=>{
         console.debug('beforeUpload',file,fileList)
         return true;
     }
+
+    // 当关闭管理文件对话框
+    onModalCancel=()=>{
+        let ret = [];
+        this.state.opDataSource.forEach((item,_,__)=>{
+            if(!item.isUploadError)
+                ret.push(item);
+        })
+
+        this.setState({
+            showFileOps:false,
+            infoBoxDatasource:ret,
+        })
+    }
+
 
 
     listInfoBoxItem =item=> (
@@ -294,6 +250,7 @@ class MediaInfoBoxComponent extends React.Component{
         const {data} = this.props;
         const uploadBtn=(
             <Upload
+                accept={'image/*'}
                 multiple={true}
                 // action={"/api/epoint/upload_mediainfo"}
                 action={"/api/epoint/upload_mediainfo?epId="+data.epId}
@@ -318,7 +275,7 @@ class MediaInfoBoxComponent extends React.Component{
                    destroyOnClose={true}
                    mask={false}
                    width={1000}
-                   onCancel={e=>{this.setState({showFileOps:false})}}
+                   onCancel={this.onModalCancel}
                    style={{}}>
                     <div className={'modal-body-container'}>
                         <List
