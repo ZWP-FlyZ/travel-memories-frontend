@@ -571,7 +571,7 @@ class MapApp extends React.Component{
                                 closable={true}
                                 onClose={this.onCloseMediaInfoBox}
                                 afterVisibleChange={null}
-                                visible={this.state.mediaInfoBoxVisible||true}
+                                visible={this.state.mediaInfoBoxVisible}
                                 mask={false}
                                 getContainer={false}
                                 destroyOnClose={true}
@@ -579,6 +579,7 @@ class MapApp extends React.Component{
                                 style={{position: 'absolute', opacity:1}}>
                                 <MediaInfoBoxComponent
                                     child={self=>{this.$mediaInfoBox = self;}}
+                                    data={this.state.mediaInfoBoxData}
                                 />
                             </Drawer>
                         </div>

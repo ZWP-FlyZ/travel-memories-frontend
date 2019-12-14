@@ -1,25 +1,33 @@
 import React from 'react'
 import {Button, Col, Input, message, Avatar,Progress,
-    Row, Empty, List, Card, Modal, Upload,Icon} from "antd";
+    Row, Spin, List, Card, Modal, Upload,Icon} from "antd";
 import './MediaInfoBoxComponent.css'
+import Axios from "axios";
+
+function toDownloadPath(url){return '/api/epoint/files/'+url;}
+
 
 class MediaInfoBoxComponent extends React.Component{
 
-        datasource=["http://file02.16sucai.com/d/file/2014/0704/e53c868ee9e8e7b28c424b56afe2066d.jpg",
-            'http://b-ssl.duitang.com/uploads/item/201507/04/20150704212949_PSfNZ.jpeg',
-            "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png"]
+    datasource=["http://file02.16sucai.com/d/file/2014/0704/e53c868ee9e8e7b28c424b56afe2066d.jpg",
+        'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1576233053226&di=61785702c6ce6f203b06d0d0801887fe&imgtype=0&src=http%3A%2F%2Fgss0.baidu.com%2F9vo3dSag_xI4khGko9WTAnF6hhy%2Fzhidao%2Fpic%2Fitem%2F5366d0160924ab189ee8059f30fae6cd7a890b9f.jpg',
+        "https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png",
+        '/api/epoint/files/1.jpg',
+        '/api/epoint/files/2_20_13ded2a4e_katou-megumi-sakura-3840x2160.png'
+    ]
 
 
     // 文件项定义
     // fileItem = {
     //         fid:0,
-    //         fName:''
+    //         fName:'',
     //         rowUrl:'',// 原始文件路径
     //         previewUrl:'',//预览图文件地址
     //         fType:0,//文件类型
     //         describe:'',//文件描述
     //         epMiId:0,//媒体文件id
     //         percent:null | 0-100 // 是否加载
+    //         isUploadError:false | true
     //      }
 
     ds=[
@@ -49,18 +57,38 @@ class MediaInfoBoxComponent extends React.Component{
             describe:'女孩',//文件描述
             epMiId:0,//媒体文件id
             percent:null // 是否加载
+        },
+
+        {
+            fid:3,
+            rowUrl:this.datasource[3],// 原始文件路径
+            previewUrl:this.datasource[3],//预览图文件地址
+            fType:0,//文件类型
+            describe:'女孩',//文件描述
+            epMiId:0,//媒体文件id
+            percent:null // 是否加载
+        },
+        {
+            fid:4,
+            rowUrl:this.datasource[4],// 原始文件路径
+            previewUrl:this.datasource[4],//预览图文件地址
+            fType:0,//文件类型
+            describe:'女孩',//文件描述
+            epMiId:0,//媒体文件id
+            percent:null // 是否加载
         }
 
     ]
 
 
     state={
-            // 显示管理文件对话框
-            showFileOps:false,
-            // 操作
+        // 显示管理文件对话框
+        showFileOps:false,
+        infoBoxSpinning:false,
+        // 操作
 
-            infoBoxDatasource:this.ds,
-            opDataSource:this.ds,
+        infoBoxDatasource:[],
+        opDataSource:[],
     }
 
 
@@ -70,46 +98,145 @@ class MediaInfoBoxComponent extends React.Component{
     }
 
     updateInfoBox =()=>{
-
+        const {data} = this.props;
+        if(data.epMiInfo==null)
+            this.getMediaInfoFromService(data);
+        else{
+            //  重要！！！！！
+            //  infoBoxDatasource和opDataSource 不共用，
+            let ls = this.formatMediaInfo(data.epMiInfo);
+            this.setState({
+                infoBoxDatasource:ls,
+                opDataSource:[...ls] // 深复制
+            });
+        }
     }
 
+    getMediaInfoFromService=(epoint)=>{
+        this.setState({infoBoxSpinning:true});
+        Axios({
+            url:'/api/epoint/get_mediainfo',
+            method:'get',
+            params:{
+                "epId":epoint.epId,
+            },
+        }).then(respone=>{
+            this.setState({infoBoxSpinning:false});
+            console.debug('getMediaInfoFromService',respone);
+            // 成功回调
+            const res = respone.data;
+            if(res.code === 1000){
+                let ls = this.formatMediaInfo(res.data);
+                this.setState({
+                    infoBoxDatasource:ls,
+                    opDataSource:ls});
+                epoint.epMiInfo = res.data;
+            }else{
+                message.error("获取媒体文件失败！");
+            }
+        }).catch(e=>{
+            this.setState({infoBoxSpinning:false});
+            if(Axios.isCancel(e)){
+                console.log("获取媒体信息取消");
+            }else{
+                message.error("未知错误！");
+                console.log(e);
+            }
+        })
+    }
+
+    formatMediaInfo(infoList){
+        let ret=[];
+        infoList.forEach((item,_,__)=>{
+            ret.unshift({
+                fid:item.epMiId,
+                fName:item.epMiPath,
+                rowUrl:item.epMiPath,// 原始文件路径
+                previewUrl:item.epMiPath,//预览图文件地址
+                fType:item.epMiType,//文件类型
+                describe:item.epMiDesc,//文件描述
+                epMiId:item.epMiId,//媒体文件id
+                percent:null  // 是否加载
+            });
+        })
+        return ret;
+    }
+
+    // 父组件调用，显示文件管理对话框
     showFilesModal=()=>{
             if(!this.state.showFileOps)
                 this.setState({showFileOps:true})
     }
 
+
     componentDidMount() {
         this.props.child(this);
     }
 
-    onUploadChange=({file,fileList,event})=>{
-            console.debug(file,fileList,event);
-            const {opDataSource} = this.state;
-            if(file.status==='done'){
-                let t = opDataSource.find(item=>item.fid==file.uid);
-                if(t!=null){
-                    t.percent=null;
-                    t.rowUrl=file.response.url
-                    t.previewUrl=file.response.url
-                }
-            }else if(file.status==='uploading'){
-                let t = opDataSource.find(item=>item.fid==file.uid);
-                if(t!=null){
-                    t.percent=file.percent.toFixed(0);
-                }else{
-                    opDataSource.unshift({
-                        fid:file.uid,
-                        rowUrl:'',// 原始文件路径
-                        previewUrl:'',//预览图文件地址
-                        fType:0,//文件类型
-                        describe:'花ssss',//文件描述
-                        epMiId:0,//媒体文件id
-                        percent:0 // 是否加载
-                    });
-                }
-            }else{
-                console.error(file,fileList,event);
+    // 当上传成功时调用
+    onUploadSuccess = fileType=>{
+        const {data} = this.props
+        const mi={
+            "epMiId": fileType.epMiId,
+            "epMiType": fileType.fType,
+            "epId": data.epId,
+            "epMiDesc": fileType.describe,
+            "epMiPath": fileType.rowUrl,
+            "uid": data.uid
+        }
+        this.props.data.epMiInfo.push(mi);
+    }
+
+
+    // 上传组件状态变更回调
+    onUploadChange=({file,_,__})=>{
+        console.debug(file);
+        const {opDataSource} = this.state;
+        const response = file.response;
+        // 查找是否之前创建过上传中的图
+        let t = opDataSource.find(item=>item.fid===file.uid);
+        if(t==null){
+            // 还未创建
+            let newt = {
+                fid:file.uid,
+                fName:file.name,
+                rowUrl:'',// 原始文件路径
+                previewUrl:'',//预览图文件地址
+                fType:0,//文件类型
+                describe:'',//文件描述
+                epMiId:-1,//媒体文件id
+                percent:0, // 是否加载
+                isUploadError:false
             }
+            if(response!=null&&response.code!==1000){
+                newt.isUploadError=true;
+            }
+            opDataSource.unshift(newt);
+        }else if(!t.isUploadError){
+
+            if(response!=null&&response.code!==1000){
+                t.isUploadError=true;
+            }else if(file.status==='error'){
+                t.isUploadError=true;
+            }else if(file.status==='uploading'){
+                t.percent=file.percent.toFixed(0);
+            }else if(file.status==='done'){
+                if(response==null)
+                    t.isUploadError=true;
+                else{
+                    //传输正确完成
+                    const info = file.response.data;
+                    t.fid = info.epMiId;
+                    t.fName=info.epMiPath;
+                    t.epMiId = info.epMiId;
+                    t.percent=null;
+                    t.rowUrl=info.epMiPath;
+                    t.previewUrl=info.epMiPath;
+                    t.fType = info.epMiType;
+                    this.onUploadSuccess(t);
+                }
+            }
+        }
         this.setState({opDataSource:opDataSource})
     }
 
@@ -131,6 +258,12 @@ class MediaInfoBoxComponent extends React.Component{
 
 
 
+    beforeUpload=(file,fileList)=>{
+        console.debug('beforeUpload',file,fileList)
+        return true;
+    }
+
+
     listInfoBoxItem =item=> (
         <List.Item>
                 <Row type="flex" align="middle" justify="center">
@@ -138,8 +271,8 @@ class MediaInfoBoxComponent extends React.Component{
                         <Card
                             hoverable
                             style={{ width: 250,minHeight:100}}
-                            cover={<img alt={item.describe} src={item.previewUrl} />}>
-                            <Card.Meta description={item.describe} />
+                            cover={<img alt={item.fName} src={toDownloadPath(item.previewUrl)} />}>
+                            <Card.Meta description={""} />
                         </Card>
                     </Col>
                 </Row>
@@ -157,23 +290,18 @@ class MediaInfoBoxComponent extends React.Component{
     );
 
     render() {
-        const {infoBoxDatasource,opDataSource} = this.state;
-
-        const mList= (
-            <div className={'info-box-list-container'}>
-                <List
-                    itemLayout={"vertical"}
-                    dataSource={infoBoxDatasource}
-                    renderItem={this.listInfoBoxItem}>
-                </List>
-            </div>
-        );
+        const {infoBoxDatasource,opDataSource,infoBoxSpinning} = this.state;
+        const {data} = this.props;
         const uploadBtn=(
             <Upload
                 multiple={true}
-                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                // action={"/api/epoint/upload_mediainfo"}
+                action={"/api/epoint/upload_mediainfo?epId="+data.epId}
+                headers={{'c-version':'1.0'}}
                 showUploadList={false}
-                onChange={this.onUploadChange}>
+                onChange={this.onUploadChange}
+                beforeUpload={this.beforeUpload}
+                >
                 <Button type={"primary"}>
                     <Icon type="upload" /> 点击上传文件
                 </Button>
@@ -204,7 +332,18 @@ class MediaInfoBoxComponent extends React.Component{
                     </div>
                 </Modal>
                 <div className={'info-box'}>
-                    {mList}
+                    <div className={'info-box-list-container'}>
+                        <Spin tip={"加载文件列表中..."}
+                              delay={500}
+                              spinning={infoBoxSpinning}>
+                            <List
+                                bordered={false}
+                                itemLayout={"vertical"}
+                                dataSource={infoBoxDatasource}
+                                renderItem={this.listInfoBoxItem}>
+                            </List>
+                        </Spin>
+                    </div>
                 </div>
             </div>
 
@@ -220,6 +359,7 @@ class PictureContainer extends React.Component{
 
     state={
         showMask:'none',
+        isError:false,
     }
 
     render() {
@@ -275,7 +415,9 @@ class PictureContainer extends React.Component{
                 </div>
                 <div id={'file-mask'} className={'file-item-pic-container'}>
                     <img style={{height:'100%',width:'100%',objectFit:'contain'}}
-                         src={data.previewUrl}/>
+                         src={toDownloadPath(data.previewUrl)}
+                         alt={data.fName}
+                    />
                 </div>
             </div>
         );

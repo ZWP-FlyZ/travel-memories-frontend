@@ -108,7 +108,7 @@ class SearchComponent extends React.Component{
     onClickGo=e=>{
         console.debug(this.curSelect);
         if(this.curSelect!=null){
-            if(this.state.searchType==0)
+            if(this.state.searchType===0)
                 this.props.onSearchMapSuccess(this.curSelect);
             else
                 this.props.onSearchEpointSuccess(this.curSelect);
