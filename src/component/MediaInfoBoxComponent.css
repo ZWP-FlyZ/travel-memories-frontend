@@ -31,28 +31,53 @@
 .file-item-container{
     width: 240px;
     height: 180px;
+    border: 1px solid;
+    border-radius: 4px;
     position: relative;
-    top: 10px;
 }
+
+.file-item-container-error{
+    width: 240px;
+    height: 180px;
+    border: 1px solid red;
+    border-radius: 4px;
+    position: relative;
+}
+
 
 .file-item-pic-container{
     width: 100%;
     height: 100%;
-    border: 1px solid;
-    border-radius: 4px;
     position: absolute;
     z-index: 1;
 }
+
+
+
 
 .file-item-pic-mask{
     width: 100%;
     height: 100%;
     position: absolute;
     z-index: 2;
-    border: 1px solid;
-    border-radius: 4px;
     background:rgba(0,0,0,0.2);
 }
+
+.file-item-uploading{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 2;
+    background:rgba(0,0,0,0.2);
+}
+.file-item-has-error{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    z-index: 2;
+    background:rgba(0,0,0,0.2);
+}
+
 
 .icon-in-pc{
     font-size:25px;

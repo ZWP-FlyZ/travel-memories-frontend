@@ -4,7 +4,11 @@ import {Button, Col, Input, message, Avatar,Progress,
 import './MediaInfoBoxComponent.css'
 import Axios from "axios";
 
-function toDownloadPath(url){return '/api/epoint/files/'+url;}
+function toDownloadPath(url){
+    if(url==null||url==='')
+        return '';
+    else return '/api/epoint/files/'+url;
+}
 
 
 class MediaInfoBoxComponent extends React.Component{
@@ -12,15 +16,15 @@ class MediaInfoBoxComponent extends React.Component{
 
     // 文件项定义
     // fileItem = {
-    //         fid:0,
+    //         fId:0,
     //         fName:'',
-    //         rowUrl:'',// 原始文件路径
-    //         previewUrl:'',//预览图文件地址
+    //         fUrl:'',// 原始文件路径
+    //         fPreviewUrl:'',//预览图文件地址
     //         fType:0,//文件类型
-    //         describe:'',//文件描述
+    //         fDescription:'',//文件描述
     //         epMiId:0,//媒体文件id
-    //         percent:null | 0-100 // 是否加载
-    //         isUploadError:false | true
+    //         fStatusPercent:null | 0-100 // 是否加载
+    //         fStatusUploadError:false | true
     //      }
 
     state={
@@ -92,14 +96,14 @@ class MediaInfoBoxComponent extends React.Component{
         let ret=[];
         infoList.forEach((item,_,__)=>{
             ret.unshift({
-                fid:item.epMiId,
+                fId:item.epMiId,
                 fName:item.epMiPath,
-                rowUrl:item.epMiPath,// 原始文件路径
-                previewUrl:'p-'+item.epMiPath,//预览图文件地址
+                fUrl:item.epMiPath,// 原始文件路径
+                fPreviewUrl:'p-'+item.epMiPath,//预览图文件地址
                 fType:item.epMiType,//文件类型
-                describe:item.epMiDesc,//文件描述
+                fDescription:item.epMiDesc,//文件描述
                 epMiId:item.epMiId,//媒体文件id
-                percent:null  // 是否加载
+                fStatusPercent:null  // 是否加载
             });
         })
         return ret;
@@ -108,7 +112,8 @@ class MediaInfoBoxComponent extends React.Component{
     // 父组件调用，显示文件管理对话框
     showFilesModal=()=>{
             if(!this.state.showFileOps)
-                this.setState({showFileOps:true})
+                this.setState({showFileOps:true,
+                    opDataSource:[...this.state.infoBoxDatasource]})
     }
 
 
@@ -123,8 +128,8 @@ class MediaInfoBoxComponent extends React.Component{
             "epMiId": fileType.epMiId,
             "epMiType": fileType.fType,
             "epId": data.epId,
-            "epMiDesc": fileType.describe,
-            "epMiPath": fileType.rowUrl,
+            "epMiDesc": fileType.fDescription,
+            "epMiPath": fileType.fUrl,
             "uid": data.uid
         }
         this.props.data.epMiInfo.unshift(mi);
@@ -137,44 +142,44 @@ class MediaInfoBoxComponent extends React.Component{
         const {opDataSource} = this.state;
         const response = file.response;
         // 查找是否之前创建过上传中的图
-        let t = opDataSource.find(item=>item.fid===file.uid);
+        let t = opDataSource.find(item=>item.fId===file.uid);
         if(t==null){
             // 还未创建
             let newt = {
-                fid:file.uid,
+                fId:file.uid,
                 fName:file.name,
-                rowUrl:'',// 原始文件路径
-                previewUrl:'',//预览图文件地址
+                fUrl:'',// 原始文件路径
+                fPreviewUrl:'',//预览图文件地址
                 fType:0,//文件类型
-                describe:'',//文件描述
+                fDescription:'',//文件描述
                 epMiId:-1,//媒体文件id
-                percent:0, // 是否加载
-                isUploadError:false
+                fStatusPercent:0, // 是否加载
+                fStatusUploadError:false
             }
             if(response!=null&&response.code!==1000){
-                newt.isUploadError=true;
+                newt.fStatusUploadError=true;
             }
             opDataSource.unshift(newt);
-        }else if(!t.isUploadError){
+        }else if(!t.fStatusUploadError){
 
             if(response!=null&&response.code!==1000){
-                t.isUploadError=true;
+                t.fStatusUploadError=true;
             }else if(file.status==='error'){
-                t.isUploadError=true;
+                t.fStatusUploadError=true;
             }else if(file.status==='uploading'){
-                t.percent=file.percent.toFixed(0);
+                t.fStatusPercent=file.percent.toFixed(0);
             }else if(file.status==='done'){
                 if(response==null)
-                    t.isUploadError=true;
+                    t.fStatusUploadError=true;
                 else{
                     //传输正确完成
                     const info = file.response.data;
-                    t.fid = info.epMiId;
+                    t.fId = info.epMiId;
                     t.fName=info.epMiPath;
                     t.epMiId = info.epMiId;
-                    t.percent=null;
-                    t.rowUrl=info.epMiPath;
-                    t.previewUrl='p-'+info.epMiPath;
+                    t.fStatusPercent=null;
+                    t.fUrl=info.epMiPath;
+                    t.fPreviewUrl='p-'+info.epMiPath;
                     t.fType = info.epMiType;
                     this.onUploadSuccess(t);
                 }
@@ -193,7 +198,14 @@ class MediaInfoBoxComponent extends React.Component{
     onModalItemDeleting=fileItem=>{
         console.debug('onModalItemDeleting',fileItem)
     }
+    onUploadingErrorDeleting=fileItem=>{
+        console.debug('onUploadingErrorDeleting',fileItem)
 
+        let opDataSource = this.state.opDataSource.filter((item,_)=>{
+            return item.fId !== fileItem.fId
+        })
+        this.setState({opDataSource:opDataSource})
+    }
     // 点击预览
     onModalItemPreviewing=fileItem=>{
         console.debug('onModalItemPreviewing',fileItem)
@@ -208,7 +220,7 @@ class MediaInfoBoxComponent extends React.Component{
     onModalCancel=()=>{
         let ret = [];
         this.state.opDataSource.forEach((item,_,__)=>{
-            if(!item.isUploadError)
+            if(!item.fStatusUploadError)
                 ret.push(item);
         })
 
@@ -227,7 +239,7 @@ class MediaInfoBoxComponent extends React.Component{
                         <Card
                             hoverable
                             style={{ width: 250,minHeight:100}}
-                            cover={<img alt={item.fName} src={toDownloadPath(item.previewUrl)} />}>
+                            cover={<img alt={item.fName} src={toDownloadPath(item.fPreviewUrl)} />}>
                             <Card.Meta description={""} />
                         </Card>
                     </Col>
@@ -241,6 +253,8 @@ class MediaInfoBoxComponent extends React.Component{
                 onPreviewing={this.onModalItemPreviewing}
                 onDeleting={this.onModalItemDeleting}
                 onDownloading={this.onModalItemDownloading}
+                onUploadingErrorDeleting={this.onUploadingErrorDeleting}
+
                 data={item}/>
         </List.Item>
     );
@@ -303,37 +317,46 @@ class MediaInfoBoxComponent extends React.Component{
                     </div>
                 </div>
             </div>
-
         );
     }
-
-
 }
 
 
+function displayBlock(flag){return flag?'block':'none';}
 
 class PictureContainer extends React.Component{
 
     state={
-        showMask:'none',
-        isError:false,
+        showPreviewLoading:true,
+        showMask:false,
+    }
+
+    checkHasError(){
+        const data = this.props.data;
+        if(data==null||
+            data.fStatusUploadError==null) return false;
+        else if(data.fStatusUploadError) return true;
+        else return false;
     }
 
     render() {
-        const {data,onPreviewing,onDownloading,onDeleting} = this.props;
-        const {showMask} = this.state;
-        const percent =data==null?null:data.percent;
+        const {data,onPreviewing,onDownloading,onDeleting,onUploadingErrorDeleting} = this.props;
+        const {showMask,showPreviewLoading} = this.state;
+        const percent = data==null?null:data.fStatusPercent;
+        const hasError = this.checkHasError();
         return (
-            <div className={'file-item-container'}
+            <div className={hasError?'file-item-container-error': 'file-item-container'}
                  onMouseEnter={event => {
-                     if(percent==null)
-                         this.setState({showMask:'block'})
+                     if(!hasError&&!showPreviewLoading
+                         &&percent==null)
+                         this.setState({showMask:true})
                  }}
                  onMouseLeave={event => {
-                     if(percent==null)
-                         this.setState({showMask:'none'})
+                     if(!hasError&&!showPreviewLoading
+                         &&percent==null)
+                         this.setState({showMask:false})
                  }}>
-                <div className={'file-item-pic-mask'} style={{display:showMask}}>
+                <div className={'file-item-pic-mask'} style={{display:displayBlock(showMask)}}>
                     <Row type={'flex'}
                          justify="center"
                          align="middle"
@@ -354,8 +377,8 @@ class PictureContainer extends React.Component{
                         </Col>
                     </Row>
                 </div>
-                <div className={'file-item-pic-mask'}
-                     style={{display:percent==null?'none':'block'}}>
+                <div className={'file-item-uploading'}
+                     style={{display:displayBlock(!hasError&&percent!=null)}}>
                     <Row type={'flex'}
                          justify="center"
                          align="middle"
@@ -368,12 +391,31 @@ class PictureContainer extends React.Component{
                             </div>
                         </Col>
                     </Row>
-
                 </div>
-                <div id={'file-mask'} className={'file-item-pic-container'}>
+                <div className={'file-item-has-error'}
+                     style={{display:displayBlock(hasError)}}>
+                    <Row
+                        type={'flex'}
+                        justify="center"
+                        align="middle">
+                        <Col >
+                            <Icon type={'delete'}
+                                  style={{color:'red',fontSize:40}}
+                                  onClick={e=>onUploadingErrorDeleting(data)}
+                            />
+                        </Col>
+                        <Col >
+                            <div style={{color:'red',fontSize:18}}>上传失败，点击移除</div>
+                        </Col>
+                    </Row>
+                </div>
+                <div id={'file-mask'}
+                     className={'file-item-pic-container'}
+                     style={{display:displayBlock(!hasError&&!showPreviewLoading)}}>
                     <img style={{height:'100%',width:'100%',objectFit:'contain'}}
-                         src={toDownloadPath(data.previewUrl)}
+                         src={toDownloadPath(data.fPreviewUrl)}
                          alt={data.fName}
+                         onLoad={() => this.setState({showPreviewLoading:false}) }
                     />
                 </div>
             </div>
