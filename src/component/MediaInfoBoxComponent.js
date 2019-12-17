@@ -1,6 +1,8 @@
 import React from 'react'
-import {Button, Col, Input, message, Avatar,Progress,
-    Row, Spin, List, Card, Modal, Upload,Icon} from "antd";
+import {
+    Button, Col, Input, message, Avatar, Progress,
+    Row, Spin, List, Card, Modal, Upload, Icon, Popconfirm, Divider
+} from "antd";
 import './MediaInfoBoxComponent.css'
 import Axios from "axios";
 
@@ -31,12 +33,13 @@ class MediaInfoBoxComponent extends React.Component{
         // 显示管理文件对话框
         showFileOps:false,
         infoBoxSpinning:false,
+        showPreviewModal:false,
         // 操作
 
         infoBoxDatasource:[],
         opDataSource:[],
     }
-
+    curPreviewFileItem = {};
 
     // 父组件关闭时
     closeInfoBox =()=>{
@@ -197,6 +200,38 @@ class MediaInfoBoxComponent extends React.Component{
     // 点击删除
     onModalItemDeleting=fileItem=>{
         console.debug('onModalItemDeleting',fileItem)
+        Axios({
+            url:'/api/epoint/delete_mediainfo',
+            method:'get',
+            params:{
+                "epMiId":fileItem.epMiId,
+                "epMiPath":fileItem.fUrl
+            },
+        }).then(respone=>{
+            console.debug('onModalItemDeleting',respone);
+            // 成功回调
+            const res = respone.data;
+            if(res.code === 1000){
+                let opDataSource = this.state.opDataSource.filter((item,_)=>{
+                    return item.fId !== fileItem.fId
+                })
+                this.setState({opDataSource:opDataSource})
+                let tmp = this.props.data.epMiInfo.filter((item,_)=>{
+                    return item.epMiId !== fileItem.epMiId
+                })
+                this.props.data.epMiInfo=tmp;
+            }else{
+                message.error("删除文件失败！");
+            }
+        }).catch(e=>{
+            this.setState({infoBoxSpinning:false});
+            if(Axios.isCancel(e)){
+                console.log("删除文件取消");
+            }else{
+                message.error("未知错误！");
+                console.log(e);
+            }
+        })
     }
     onUploadingErrorDeleting=fileItem=>{
         console.debug('onUploadingErrorDeleting',fileItem)
@@ -231,6 +266,10 @@ class MediaInfoBoxComponent extends React.Component{
     }
 
 
+    previewModal=item=>{
+        this.curPreviewFileItem = item;
+        this.setState({showPreviewModal:true})
+    }
 
     listInfoBoxItem =item=> (
         <List.Item>
@@ -239,8 +278,9 @@ class MediaInfoBoxComponent extends React.Component{
                         <Card
                             hoverable
                             style={{ width: 250,minHeight:100}}
+                            onClick={event => this.previewModal(item)}
                             cover={<img alt={item.fName} src={toDownloadPath(item.fPreviewUrl)} />}>
-                            <Card.Meta description={""} />
+                            <Card.Meta description={item.fDescription} />
                         </Card>
                     </Col>
                 </Row>
@@ -254,7 +294,6 @@ class MediaInfoBoxComponent extends React.Component{
                 onDeleting={this.onModalItemDeleting}
                 onDownloading={this.onModalItemDownloading}
                 onUploadingErrorDeleting={this.onUploadingErrorDeleting}
-
                 data={item}/>
         </List.Item>
     );
@@ -302,6 +341,54 @@ class MediaInfoBoxComponent extends React.Component{
                         />
                     </div>
                 </Modal>
+                <Modal
+                    title={"预览"}
+                    footer={null}
+                    visible={this.state.showPreviewModal}
+                    destroyOnClose={true}
+                    onCancel={e=>this.setState({showPreviewModal:false})}
+                    width={"75vw"}
+                    >
+                    <Row type={"flex"}
+                         justify="center"
+                         align="middle"
+                         gutter={[20,20]}
+                    >
+                        <Col>
+                            <div style={{width:'100%',maxHeight:'68vh'}}>
+                                <img alt={this.curPreviewFileItem.fName}
+                                     src={toDownloadPath(this.curPreviewFileItem.fUrl)}
+                                     style={{maxHeight:'65vh',
+                                     }}
+                                />
+                            </div>
+                        </Col>
+                    </Row>
+                    <Divider />
+                    <Row type={"flex"}
+                         justify="center"
+                         align="middle"
+                         gutter={[20,20]}
+                    >
+                        <Col>
+                            <div style={{width:'66vw',
+                                        maxHeight:'10vh'}}>
+                                <Input.Group style={{width:'100%'}}>
+                                    <Input
+                                        placeholder={"请输入文件描述"}
+                                        style={{width:'90%',height:'50px'}}
+                                        maxLength={50}
+                                    />
+                                    <Button type={"primary"}
+                                            style={{width:'10%',height:'50px'}}>保存</Button>
+                                </Input.Group>
+
+                            </div>
+                        </Col>
+                    </Row>
+
+                </Modal>
+
                 <div className={'info-box'}>
                     <div className={'info-box-list-container'}>
                         <Spin tip={"加载文件列表中..."}
@@ -366,14 +453,21 @@ class PictureContainer extends React.Component{
                                       onClick={e=>onPreviewing(data)}/>
                         </Col>
                         <Col>
-                            <Icon type={'cloud-download'} className={'icon-in-pc'}
-                                  onClick={e=>onDownloading(data)}/>
+                            <a href={toDownloadPath(data.fUrl)}>
+                                <Icon type={'cloud-download'} className={'icon-in-pc'}
+                                      onClick={e=>onDownloading(data)}>
+                                </Icon>
+                            </a>
                         </Col>
                         <Col>
-                            <Icon type={'delete'} className={'icon-in-pc'}
-                                  style={{color:'red'}}
-                                  onClick={e=>onDeleting(data)}
-                            />
+                            <Popconfirm title={'确认删除？'}
+                                        okText="确认" cancelText="取消"
+                                        okType={'danger'}
+                                        onConfirm={e => onDeleting(data)}>
+                                <Icon type={'delete'} className={'icon-in-pc'}
+                                      style={{color:'red'}}
+                                />
+                            </Popconfirm>
                         </Col>
                     </Row>
                 </div>
