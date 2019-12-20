@@ -390,7 +390,7 @@ class MediaInfoBoxComponent extends React.Component{
                    visible={this.state.showFileOps}
                    destroyOnClose={true}
                    mask={false}
-                   width={1000}
+                   width={830}
                    onCancel={this.onModalCancel}
                    style={{}}>
                     <div className={'modal-body-container'}>
@@ -405,7 +405,7 @@ class MediaInfoBoxComponent extends React.Component{
                     </div>
                 </Modal>
                 <Modal
-                    title={"文件预览"}
+                    title={"文件浏览"}
                     footer={null}
                     visible={this.state.showPreviewModal}
                     destroyOnClose={true}
