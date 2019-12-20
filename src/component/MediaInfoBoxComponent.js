@@ -34,7 +34,11 @@ class MediaInfoBoxComponent extends React.Component{
         showFileOps:false,
         infoBoxSpinning:false,
         showPreviewModal:false,
-        // 操作
+
+        disableUpdateBtn:true,
+        updateDescription:'',
+        updateLoading:false,
+
 
         infoBoxDatasource:[],
         opDataSource:[],
@@ -268,7 +272,66 @@ class MediaInfoBoxComponent extends React.Component{
 
     previewModal=item=>{
         this.curPreviewFileItem = item;
-        this.setState({showPreviewModal:true})
+        this.setState({showPreviewModal:true,
+            updateDescription:item.fDescription})
+    }
+
+    onDescriptionChanged=e=>{
+        this.setState({
+            disableUpdateBtn:false,
+            updateDescription:e.target.value,
+        })
+    }
+
+    onUpdateDescriptionClick=e=>{
+        this.setState({updateLoading:true})
+        const curDesc = this.state.updateDescription;
+        const curMid = this.curPreviewFileItem.epMiId;
+        Axios({
+            url:'/api/epoint/setting_mediainfo',
+            method:'post',
+            params:{
+                "epMiId":curMid,
+                "epMiDesc":curDesc
+            },
+        }).then(respone=>{
+            this.setState({updateLoading:false})
+            console.debug('onUpdateDescriptionClick',respone);
+            // 成功回调
+            const res = respone.data;
+            if(res.code === 1000){
+                this.curPreviewFileItem.fDescription =curDesc;
+                console.debug(this.curPreviewFileItem,this.state.infoBoxDatasource)
+                this.props.data.epMiInfo.forEach((item,_,__)=>{
+                    if(item.epMiId===curMid)
+                        item.epMiDesc=curDesc;
+                })
+                this.state.infoBoxDatasource.forEach((item,_,__)=>{
+                    if(item.epMiId===curMid)
+                        item.fDescription=curDesc;
+                })
+
+                message.success("更改文件描述成功！");
+                this.setState({disableUpdateBtn:true})
+            }else{
+                message.error("更改文件描述失败！");
+            }
+        }).catch(e=>{
+            this.setState({updateLoading:false})
+            if(Axios.isCancel(e)){
+                console.log("更新媒体文件描述取消");
+            }else{
+                message.error("未知错误！");
+                console.log(e);
+            }
+        })
+    }
+
+    onPreViewModalCancel = e=>{
+        this.setState({
+            showPreviewModal:false,
+            // infoBoxDatasource:[...this.state.infoBoxDatasource]
+        });
     }
 
     listInfoBoxItem =item=> (
@@ -342,12 +405,12 @@ class MediaInfoBoxComponent extends React.Component{
                     </div>
                 </Modal>
                 <Modal
-                    title={"预览"}
+                    title={"文件预览"}
                     footer={null}
                     visible={this.state.showPreviewModal}
                     destroyOnClose={true}
-                    onCancel={e=>this.setState({showPreviewModal:false})}
-                    width={"75vw"}
+                    onCancel={this.onPreViewModalCancel}
+                    width={"70vw"}
                     >
                     <Row type={"flex"}
                          justify="center"
@@ -355,11 +418,10 @@ class MediaInfoBoxComponent extends React.Component{
                          gutter={[20,20]}
                     >
                         <Col>
-                            <div style={{width:'100%',maxHeight:'68vh'}}>
+                            <div style={{maxHeight:'60vh',width:'100%'}}>
                                 <img alt={this.curPreviewFileItem.fName}
                                      src={toDownloadPath(this.curPreviewFileItem.fUrl)}
-                                     style={{maxHeight:'65vh',
-                                     }}
+                                     style={{height:'60vh',width:'100%',objectFit: "scale-down"}}
                                 />
                             </div>
                         </Col>
@@ -372,15 +434,24 @@ class MediaInfoBoxComponent extends React.Component{
                     >
                         <Col>
                             <div style={{width:'66vw',
-                                        maxHeight:'10vh'}}>
+                                        height:'10vh'}}>
                                 <Input.Group style={{width:'100%'}}>
                                     <Input
                                         placeholder={"请输入文件描述"}
                                         style={{width:'90%',height:'50px'}}
                                         maxLength={50}
+                                        onChange={this.onDescriptionChanged}
+                                        value={this.state.updateDescription}
                                     />
                                     <Button type={"primary"}
-                                            style={{width:'10%',height:'50px'}}>保存</Button>
+                                            style={{width:'10%',height:'50px'}}
+                                            loading={this.state.updateLoading}
+                                            disabled={this.state.disableUpdateBtn}
+                                            onClick={this.onUpdateDescriptionClick}
+                                    >
+                                        更新
+                                        {/*<Icon type={'syn'} style={{fontSize:'30px'}}/>*/}
+                                    </Button>
                                 </Input.Group>
 
                             </div>
