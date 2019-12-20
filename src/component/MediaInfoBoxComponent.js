@@ -301,7 +301,7 @@ class MediaInfoBoxComponent extends React.Component{
             const res = respone.data;
             if(res.code === 1000){
                 this.curPreviewFileItem.fDescription =curDesc;
-                console.debug(this.curPreviewFileItem,this.state.infoBoxDatasource)
+                // console.debug(this.curPreviewFileItem,this.state.infoBoxDatasource)
                 this.props.data.epMiInfo.forEach((item,_,__)=>{
                     if(item.epMiId===curMid)
                         item.epMiDesc=curDesc;

@@ -38,6 +38,7 @@ class LogInComponent extends React.Component{
 
     logonSuccess=()=>{
         this.setState({isLogonType:false});
+        message.success("注册成功，请登录！");
     }
 
 

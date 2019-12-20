@@ -9,7 +9,7 @@ import Axios from 'axios'
 import UserInfoBoxComponent from "./component/UserInfoBoxComponent";
 import SearchComponent from './component/SearchComponent'
 import MediaInfoBoxComponent from './component/MediaInfoBoxComponent'
-
+import {toBd09,toGcj02} from './MyCoodTransform';
 class MapApp extends React.Component{
 
 
@@ -164,8 +164,11 @@ class MapApp extends React.Component{
         //     userInfoBoxVisible:true,
         //     userInfoBoxType:'',
         //     userInfoBoxData:{},})
-
-
+        console.debug("")
+        const point = event.point;
+        const point2 = toGcj02(point,'bd09');
+        const point3 = toBd09(point2,'gcj02');
+        console.debug(point,point2,point3)
     }
     // 双击地图事件
     onDoubleClickMap = event=>{
@@ -184,11 +187,19 @@ class MapApp extends React.Component{
         if(!!this.pointToAdd){
             this.map.removeOverlay(this.pointToAdd);
         }
+        /////////////////////////////
+        // console.debug(event.point)
+        const pointGcj02 = toGcj02(event.point,'bd09');
+        // const pointBd09F = toBd09(pointGcj02,'gcj02');
+        // event.point.lng = pointBd09F.lng;
+        // event.point.lat = pointBd09F.lat;
+        // console.debug(event.point)
+        ////////////////////////////
         this.myGeo.getLocation(event.point,res=>{
-            console.log('geo',res);
+            // console.log('geo',res);
             let data = {
-                lng:event.point.lng,
-                lat:event.point.lat,
+                lng:pointGcj02.lng,
+                lat:pointGcj02.lat,
                 title:'',
                 titles:[],
                 address:''
@@ -318,7 +329,9 @@ class MapApp extends React.Component{
 
         this.map.clearOverlays();
         this.ePoints.drawPoints.forEach((point,idx,arr)=>{
-            let bp = new BMap.Point(point.epLng, point.epLat);
+            const newPoint= toBd09({lng:point.epLng,
+                                lat:point.epLat},'gcj02')
+            let bp = new BMap.Point(newPoint.lng, newPoint.lat);
             let mk = null;
             if(point.epType===0)
                 mk = new BMap.Marker(bp,{icon:this.starEmpty});
@@ -381,7 +394,9 @@ class MapApp extends React.Component{
 
     onSearchEpointSuccess=result=>{
         if(result==null) return ;
-        this.map.centerAndZoom(new BMap.Point(result.epLng, result.epLat),18);
+        const newPoint= toBd09({lng:result.epLng,
+            lat:result.epLat},'gcj02')
+        this.map.centerAndZoom(new BMap.Point(newPoint.lng, newPoint.lat),18);
         // this.map.panTo();
     }
 
@@ -412,12 +427,7 @@ class MapApp extends React.Component{
         // 定位
         this.doLocation();
 
-
-
-
-
-
-
+        
     }
 
     render() {
