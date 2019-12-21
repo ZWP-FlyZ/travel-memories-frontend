@@ -16,7 +16,6 @@ let logonSuccess =null;
 
 
 function _p(rawPassword){
-    const time = (new Date()).valueOf();
     const v =Base64.stringify(Utf8.parse('-'+rawPassword+'-'));
     return MD5(v).toString();
 }
@@ -102,7 +101,7 @@ class LogInForm extends React.Component{
             }
         ).then(respone=>{
             this.setState({loginLoading:false});
-            console.log(respone);
+            // console.log(respone);
             // 登录成功回调
             const res = respone.data;
             if(res.code === 1000){

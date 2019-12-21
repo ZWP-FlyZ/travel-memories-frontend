@@ -3,8 +3,8 @@ import './MapApp.css'
 import BMap from 'BMap';
 import LogInComponent from './component/LogInComponent';
 import InfoBoxComponent from './component/InfoBoxComponent'
-import {message, Row, Col, Checkbox, Avatar, Input,Icon,
-        Select, Drawer, Radio,Popover,Button} from 'antd'
+import {message, Row, Col, Checkbox, Avatar,Icon,
+         Drawer, Radio,Popover,Button} from 'antd'
 import Axios from 'axios'
 import UserInfoBoxComponent from "./component/UserInfoBoxComponent";
 import SearchComponent from './component/SearchComponent'

@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-    Button, Col, Input, message, Avatar, Progress,
+    Button, Col, Input, message, Progress,
     Row, Spin, List, Card, Modal, Upload, Icon, Popconfirm, Divider
 } from "antd";
 import './MediaInfoBoxComponent.css'
@@ -420,7 +420,7 @@ class MediaInfoBoxComponent extends React.Component{
                         <Col>
                             <div style={{maxHeight:'60vh',width:'100%'}}>
                                 <img alt={this.curPreviewFileItem.fName}
-                                     src={toDownloadPath(this.curPreviewFileItem.fUrl)}
+                                     src={toDownloadPath('mp-'+this.curPreviewFileItem.fUrl)}
                                      style={{height:'60vh',width:'100%',objectFit: "scale-down"}}
                                 />
                             </div>
