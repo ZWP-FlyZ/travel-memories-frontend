@@ -2,6 +2,9 @@ import React from "react"
 import Axios from 'axios'
 import {message ,Row, Col, Icon,Input,Modal,Form,Button,Divider} from 'antd'
 import './LogInComponent.css'
+import Base64 from 'crypto-js/enc-base64'
+import Utf8 from 'crypto-js/enc-utf8'
+import MD5 from 'crypto-js/md5'
 
 
 //////////////////////
@@ -10,6 +13,14 @@ let loginSuccess = null;
 let loginCancelToken=null;
 let logonSuccess =null;
 /////////////////////
+
+
+function _p(rawPassword){
+    const time = (new Date()).valueOf();
+    const v =Base64.stringify(Utf8.parse('-'+rawPassword+'-'));
+    return MD5(v).toString();
+}
+
 
 
 class LogInComponent extends React.Component{
@@ -74,8 +85,8 @@ class LogInForm extends React.Component{
 
     state={
         loginLoading:false,
-        username:'zwp5',
-        password:'123456',
+        username:'',
+        password:'',
     }
 
 
@@ -86,7 +97,7 @@ class LogInForm extends React.Component{
                 url:'/api/login',
                 method:'post',
                 params:{"username":loginInfo.username,
-                    "password":loginInfo.password},
+                    "password":_p(loginInfo.password)},
                 cancelToken:loginCancelToken.token
             }
         ).then(respone=>{
@@ -197,7 +208,7 @@ class LogonForm extends React.Component{
                 url:'/api/logon',
                 method:'post',
                 params:{"username":logonInfo.username,
-                    "password":logonInfo.password},
+                    "password":_p(logonInfo.password)},
                 cancelToken:loginCancelToken.token
             }
         ).then(respone=>{

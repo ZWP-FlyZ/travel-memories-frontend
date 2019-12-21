@@ -427,7 +427,7 @@ class MapApp extends React.Component{
         // 定位
         this.doLocation();
 
-        
+
     }
 
     render() {
