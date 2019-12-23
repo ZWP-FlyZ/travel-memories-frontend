@@ -9,7 +9,10 @@ import Axios from "axios";
 function toDownloadPath(url){
     if(url==null||url==='')
         return '';
-    else return '/api/epoint/files/'+url;
+    else {
+        url = encodeURI(url);
+        return '/api/epoint/files/'+url
+    };
 }
 
 
@@ -209,7 +212,7 @@ class MediaInfoBoxComponent extends React.Component{
             method:'get',
             params:{
                 "epMiId":fileItem.epMiId,
-                "epMiPath":fileItem.fUrl
+                "epMiPath":encodeURI(fileItem.fUrl)
             },
         }).then(respone=>{
             console.debug('onModalItemDeleting',respone);
@@ -505,12 +508,12 @@ class PictureContainer extends React.Component{
         return (
             <div className={hasError?'file-item-container-error': 'file-item-container'}
                  onMouseEnter={event => {
-                     if(!hasError&&!showPreviewLoading
+                     if(!hasError
                          &&percent==null)
                          this.setState({showMask:true})
                  }}
                  onMouseLeave={event => {
-                     if(!hasError&&!showPreviewLoading
+                     if(!hasError
                          &&percent==null)
                          this.setState({showMask:false})
                  }}>
@@ -576,7 +579,7 @@ class PictureContainer extends React.Component{
                 </div>
                 <div id={'file-mask'}
                      className={'file-item-pic-container'}
-                     style={{display:displayBlock(!hasError&&!showPreviewLoading)}}>
+                     style={{display:displayBlock(!hasError)}}>
                     <img style={{height:'100%',width:'100%',objectFit:'contain'}}
                          src={toDownloadPath(data.fPreviewUrl)}
                          alt={data.fName}
